@@ -11,7 +11,8 @@ typedef struct {
 } Piece;
 
 // Prototypen der Funktionen
-void draw_chessboard(Piece* pieces);
+void draw_chessboard(Piece* pieces, bool istwhite);
 void create_pieces(Piece* pieces);
 bool introduction();
+bool valid_move(Piece piece, Piece* pieces);
 #endif
