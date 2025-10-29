@@ -124,6 +124,96 @@ bool introduction() {
     
 }
 
-bool valid_move(Piece piece, Piece* pieces) {
-    ;
+bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y) {
+    bool is_white = !piece.is_white;
+    if (is_piece(position_x, position_y, pieces, is_white)) {
+        return false;
+    }
+    else if (strcmp(piece.name, "Pawn") == 0) {
+        if (position_y == origin_y + 1 && position_x == origin_x) {
+            return true;
+        }
+        else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y + 1) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else if (strcmp(piece.name, "Rook") == 0) {
+        if (position_x == origin_x) {
+            if (origin_y > position_y) {
+               for (int i = origin_y; i > position_y; i--) {
+                    if(is_piece(origin_x, i, pieces, is_white) && is_piece(origin_x, i, pieces, !is_white)) {
+                        return false;
+                    }
+               }
+               return true;
+            }
+            else if (origin_y < position_y) {
+               for (int i = origin_y; i < position_y; i++) {
+                    if(is_piece(origin_x, i, pieces, is_white) && is_piece(origin_x, i, pieces, !is_white)) {
+                        return false;
+                    }
+               }
+               return true;
+            }
+        }
+        else if (position_y == origin_y) {
+            if (origin_x > position_x) {
+               for (int i = origin_x; i > position_x; i--) {
+                    if(is_piece(origin_y, i, pieces, is_white) && is_piece(origin_x, i, pieces, !is_white)) {
+                        return false;
+                    }
+               }
+               return true;
+            }
+            else if (origin_x < position_x) {
+               for (int i = origin_x; i < position_x; i++) {
+                    if(is_piece(origin_y, i, pieces, is_white) && is_piece(origin_x, i, pieces, !is_white)) {
+                        return false;
+                    }
+               }
+               return true;
+            }
+        }
+    }
+    else if (strcmp(piece.name , "Knight") == 0)
+    {
+        if (((position_y == origin_y + 4 || position_y == origin_y - 4) && (position_x == origin_x +1 || position_x == origin_x -1)) || ((position_x == origin_x + 4 || position_x == origin_x - 4) && (position_y == origin_y +1 || position_y == origin_y -1)))
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+        
+    }
+}
+
+bool is_piece(int x, int y, Piece* pieces, bool is_white) {
+    if (is_white) {
+        for(int i = 16; i < 32; i++) {
+            if (pieces[i].x == x && pieces[i].y == y && is_white) {
+                break;
+                return true;
+            }
+            else {
+                continue;
+            }
+        }
+        return false;
+    }
+    else {
+        for(int i = 0; i < 16; i++) {
+            if (pieces[i].x == x && pieces[i].y == y && is_white) {
+                break;
+                return true;
+            }
+            else {
+                continue;
+            }
+        }
+        return false;
+    }
 }
