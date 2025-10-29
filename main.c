@@ -50,7 +50,10 @@ int main(int argc, char* argv[]) {
         int position_y = position[1] - '1';
         int origin_x = tolower(origin[0]) - 'a'; 
         int origin_y = tolower(origin[1]) - '1';
-
+        if (origin_x == position_x && origin_y == position_y ){
+            printf("Invalid position! \n");
+            continue;
+        }
 
         if (piece[0] == 'r' || strcmp(piece, "rook") == 0) {
             printf("Moving Rook to %s\n", position);
