@@ -12,9 +12,9 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
-    bool play_color_white = introduction();
+    char * play_color = introduction();
     create_pieces(pieces);
-    draw_chessboard(pieces, play_color_white);
+    draw_chessboard(pieces, play_color);
 
     while (1) {
         char piece[6];     
@@ -27,11 +27,7 @@ int main(int argc, char* argv[]) {
             printf("Invalid input!\n");
             continue;
         }
-
-        if (strcmp(position, "exit") == 0 || strcmp(piece, "exit") == 0 || strcmp(origin, "exit") == 0) {
-            break;
-        }
-
+        
         for (int i = 0; i < 6; i++) {
             piece[i] = tolower(piece[i]);
         }
@@ -50,14 +46,30 @@ int main(int argc, char* argv[]) {
         int position_y = position[1] - '1';
         int origin_x = tolower(origin[0]) - 'a'; 
         int origin_y = tolower(origin[1]) - '1';
+        Piece choosen_piece;
+        for (int i = 0; i < 32; i++)
+        {
+            if (pieces[i].x == origin_x && pieces[i].y == origin_y && (pieces[i].is_white == false && strcmp(play_color, "white") == 0 || pieces[i].is_white == true && strcmp(play_color, "black") == 0))
+            {
+                choosen_piece = pieces[i];
+            }
+            continue;
+        }
+        
         if (origin_x == position_x && origin_y == position_y ){
             printf("Invalid position! \n");
             continue;
         }
+        if (!valid_move(choosen_piece, pieces, origin_x, origin_y, position_x, position_y))
+        {
+            printf("Invalid move! \n");
+            continue;
+        }
+        
 
         if (piece[0] == 'r' || strcmp(piece, "rook") == 0) {
             printf("Moving Rook to %s\n", position);
-            if (!play_color_white) {
+            if (!play_color) {
                 if (pieces[0].x == origin_x && pieces[0].y == origin_y) {
                     pieces[0].x = position_x;
                     pieces[0].y = position_y;
@@ -79,7 +91,7 @@ int main(int argc, char* argv[]) {
         }
         else if (tolower(piece[0]) == 'p' || strcmp(piece, "pawn") == 0) {
             printf("Moving Pawn to %s\n", position);
-            if (!play_color_white) {
+            if (!play_color) {
                 for (int i = 8; i < 16; i++) {
                     if (pieces[i].x == origin_x && pieces[i].y == origin_y) {
                         pieces[i].x = position_x;
@@ -100,7 +112,7 @@ int main(int argc, char* argv[]) {
 
         else if (piece[0] == 'n' || strcmp(piece, "knight") == 0) {
             printf("Moving Knight to %s\n", position);
-            if (!play_color_white) {
+            if (!play_color) {
                 if (pieces[1].x == origin_x && pieces[1].y == origin_y) {
                     pieces[1].x = position_x;
                     pieces[1].y = position_y;
@@ -121,7 +133,7 @@ int main(int argc, char* argv[]) {
 
         else if (piece[0] == 'b' || strcmp(piece, "bishop") == 0) {
             printf("Moving Bishop to %s\n", position);
-            if (!play_color_white) {
+            if (!play_color) {
                 if (pieces[2].x == origin_x && pieces[2].y == origin_y) {
                     pieces[2].x = position_x;
                     pieces[2].y = position_y;
@@ -142,7 +154,7 @@ int main(int argc, char* argv[]) {
 
         else if (piece[0] == 'q' || strcmp(piece, "queen") == 0) {
             printf("Moving Queen to %s\n", position);
-            if (!play_color_white) {
+            if (!play_color) {
                 if (pieces[3].x == origin_x && pieces[3].y == origin_y) {
                     pieces[3].x = position_x;
                     pieces[3].y = position_y;
@@ -157,7 +169,7 @@ int main(int argc, char* argv[]) {
 
         else if (piece[0] == 'k' || strcmp(piece, "king") == 0) {
             printf("Moving King to %s\n", position);
-            if (!play_color_white) {
+            if (!play_color) {
                 if (pieces[4].x == origin_x && pieces[4].y == origin_y) {
                     pieces[4].x = position_x;
                     pieces[4].y = position_y;
@@ -174,7 +186,7 @@ int main(int argc, char* argv[]) {
             printf("Unknown piece, origin or position.\n");
             continue;
         }
-        draw_chessboard(pieces, play_color_white);
+        draw_chessboard(pieces, play_color);
     }
     free(pieces);
     return 0;
