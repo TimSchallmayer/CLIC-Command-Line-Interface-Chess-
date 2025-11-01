@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 #ifndef CHESSBOARD_H
 #define CHESSBOARD_H
 
@@ -8,12 +9,16 @@ typedef struct {
     int x;
     int y;
     int is_white;
+    bool has_moved;
 } Piece;
 
 // Prototypen der Funktionen
-void draw_chessboard(Piece* pieces, bool istwhite);
+void draw_chessboard(Piece* pieces, char* color);
 void create_pieces(Piece* pieces);
 char * introduction();
 bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y);
 bool is_piece(int x, int y, Piece* pieces, char* color);
+char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter);
+bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color);
+bool is_sqare_attacked(int x, int y, Piece* pieces, char* color);
 #endif
