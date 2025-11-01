@@ -54,29 +54,29 @@ void draw_chessboard(Piece* pieces, char* color) {
 void create_pieces(Piece* pieces) {
 
     // Initialize white pieces
-    pieces[0] = (Piece){"Rook", "♖", 0, 7, true};
-    pieces[1] = (Piece){"Knight", "♘", 1, 7, true};
-    pieces[2] = (Piece){"Bishop", "♗", 2, 7, true};
-    pieces[3] = (Piece){"Queen", "♕", 3, 7, true};
-    pieces[4] = (Piece){"King", "♔", 4, 7, true};
-    pieces[5] = (Piece){"Bishop", "♗", 5, 7, true};
-    pieces[6] = (Piece){"Knight", "♘", 6, 7, true};
-    pieces[7] = (Piece){"Rook", "♖", 7, 7, true};
+    pieces[0] = (Piece){"Rook", "♖", 0, 7, true, false};
+    pieces[1] = (Piece){"Knight", "♘", 1, 7, true, false};
+    pieces[2] = (Piece){"Bishop", "♗", 2, 7, true, false};
+    pieces[3] = (Piece){"Queen", "♕", 3, 7, true, false};
+    pieces[4] = (Piece){"King", "♔", 4, 7, true, false};
+    pieces[5] = (Piece){"Bishop", "♗", 5, 7, true, false};
+    pieces[6] = (Piece){"Knight", "♘", 6, 7, true, false};
+    pieces[7] = (Piece){"Rook", "♖", 7, 7, true, false};
     for (int i = 0; i < 8; i++) {
-        pieces[8 + i] = (Piece){"Pawn", "♙", i, 6, true};
+        pieces[8 + i] = (Piece){"Pawn", "♙", i, 6, true, false};
     }
 
     // Initialize black pieces
-    pieces[16] = (Piece){"Rook", "♜", 0, 0, false};
-    pieces[17] = (Piece){"Knight", "♞", 1, 0, false};
-    pieces[18] = (Piece){"Bishop", "♝", 2, 0, false};
-    pieces[19] = (Piece){"Queen", "♛", 3, 0, false};
-    pieces[20] = (Piece){"King", "♚", 4, 0, false};
-    pieces[21] = (Piece){"Bishop", "♝", 5, 0, false};
-    pieces[22] = (Piece){"Knight", "♞", 6, 0, false};
-    pieces[23] = (Piece){"Rook", "♜", 7, 0, false};
+    pieces[16] = (Piece){"Rook", "♜", 0, 0, false, false};
+    pieces[17] = (Piece){"Knight", "♞", 1, 0, false, false};
+    pieces[18] = (Piece){"Bishop", "♝", 2, 0, false, false};
+    pieces[19] = (Piece){"Queen", "♛", 3, 0, false, false};
+    pieces[20] = (Piece){"King", "♚", 4, 0, false, false};
+    pieces[21] = (Piece){"Bishop", "♝", 5, 0, false, false};
+    pieces[22] = (Piece){"Knight", "♞", 6, 0, false, false};
+    pieces[23] = (Piece){"Rook", "♜", 7, 0, false, false};
     for (int i = 0; i < 8; i++) {
-        pieces[24 + i] = (Piece){"Pawn", "♟", i, 1, false};
+        pieces[24 + i] = (Piece){"Pawn", "♟", i, 1, false, false};
     }
 }
 char * introduction() {
@@ -136,31 +136,64 @@ char * introduction() {
 bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y) {
     bool is_white = !piece.is_white;
     char * color;
+    char * opponent_color;
     if (is_white) {
         color = "white";
+        opponent_color = "black";
     }
     else {
         color = "black";
+        opponent_color = "white";
     }
 
     if (is_piece(position_x, position_y, pieces, color)) {
         return false;
     }
+    if (piece.x != origin_x || piece.y != origin_y) {
+        return false;
+    }
     else if (strcmp(piece.name, "Pawn") == 0) {
-        if (position_y == origin_y + 1 && position_x == origin_x) {
-            return true;
+        if (strcmp(color, "white") == 0)
+        {
+            if (position_y == origin_y + 1 && position_x == origin_x && !is_piece(position_x, position_y, pieces, "both")) {
+                return true;
+            }
+            else if (position_x == origin_x && position_y == origin_y + 2 && piece.y == 1 && !is_piece(position_x, position_y, pieces, "both"))
+            {
+                return true;
+            }
+            
+            else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y + 1 && is_piece(position_x, position_y, pieces, opponent_color)) {
+                return true;
+            }
+            else { 
+                return false;
+            }    /* code */
         }
-        else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y + 1) {
-            return true;
+        else if (strcmp(color, "black") == 0)
+        {
+            if (position_y == origin_y - 1 && position_x == origin_x && !is_piece(position_x, position_y, pieces, "both")) {
+                return true;
+            }
+            else if (position_x == origin_x && position_y == origin_y - 2 && piece.y == 6 && !is_piece(position_x, position_y, pieces, "both"))
+            {
+                return true;
+            }
+            else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y - 1 && is_piece(position_x, position_y, pieces, opponent_color)) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
-        else {
-            return false;
-        }
+        
+        
     }
     else if (strcmp(piece.name, "Rook") == 0) {
+
         if (position_x == origin_x) {
             if (origin_y > position_y) {
-               for (int i = origin_y; i > position_y; i--) {
+               for (int i = origin_y - 1; i > position_y; i--) {
                     if(is_piece(origin_x, i, pieces, "both")) {
                         return false;
                     }
@@ -168,17 +201,20 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
                return true;
             }
             else if (origin_y < position_y) {
-               for (int i = origin_y; i < position_y; i++) {
+               for (int i = origin_y + 1; i < position_y; i++) {
                     if(is_piece(origin_x, i, pieces, "both")) {
                         return false;
                     }
                }
                return true;
             }
+            else {
+                return true;
+            }
         }
         else if (position_y == origin_y) {
             if (origin_x > position_x) {
-               for (int i = origin_x; i > position_x; i--) {
+               for (int i = origin_x - 1; i > position_x; i--) {
                     if(is_piece(i, origin_y, pieces, "both")) {
                         return false;
                     }
@@ -186,12 +222,15 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
                return true;
             }
             else if (origin_x < position_x) {
-               for (int i = origin_x; i < position_x; i++) {
+               for (int i = origin_x + 1; i < position_x; i++) {
                     if(is_piece(i, origin_y, pieces, "both")) {
                         return false;
                     }
                }
                return true;
+            }
+            else {
+                return true;
             }
         }
         else {
@@ -266,7 +305,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
 
         if (position_x == origin_x) {
             if (origin_y > position_y) {
-               for (int i = origin_y; i > position_y; i--) {
+               for (int i = origin_y - 1; i > position_y; i--) {
                     if(is_piece(origin_x, i, pieces, "both")) {
                         return false;
                     }
@@ -274,7 +313,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
                return true;
             }
             else if (origin_y < position_y) {
-               for (int i = origin_y; i < position_y; i++) {
+               for (int i = origin_y + 1; i < position_y; i++) {
                     if(is_piece(origin_x, i, pieces, "both")) {
                         return false;
                     }
@@ -284,16 +323,16 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
         }
         else if (position_y == origin_y) {
             if (origin_x > position_x) {
-               for (int i = origin_x; i > position_x; i--) {
-                    if(is_piece(origin_x, i, pieces, "both")) {
+               for (int i = origin_x -1; i > position_x; i--) {
+                    if(is_piece(i, origin_y, pieces, "both")) {
                         return false;
                     }
                }
                return true;
             }
             else if (origin_x < position_x) {
-               for (int i = origin_x; i < position_x; i++) {
-                    if(is_piece(origin_x, i, pieces, "both")) {
+               for (int i = origin_x +1; i < position_x; i++) {
+                    if(is_piece(i, origin_y, pieces, "both")) {
                         return false;
                     }
                }
@@ -325,6 +364,9 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
             if (diff_x != diff_y) {
                 return false;
             }
+
+            x += step_x;
+            y += step_y;  
             
             while (x != position_x && y != position_y) 
             {
@@ -339,7 +381,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
     }
     else if (strcmp(piece.name, "King") == 0)
     {
-        if (position_x > origin_x + 1 || position_x < origin_x - 1 || position_y > origin_y + 1 || position_y < origin_y - 1) {
+        if (abs(position_x - origin_x) > 1 || abs(position_y - origin_y) > 1) {
             return false;
         }
         if (strcmp(color, "white") == 0)
@@ -348,8 +390,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
             {   
                 if (strcmp(pieces[i].name, "King") == 0)
                 {
-                    if ((pieces[i].x == position_x + 1 || pieces[i].x == position_x - 1) || (pieces[i].y == position_y + 1 || pieces[i].y == position_y - 1))
-                    {
+                    if (abs(pieces[i].x - position_x) <= 1 && abs(pieces[i].y - position_y) <= 1) {
                         return false;
                     }
                     else {
@@ -357,6 +398,16 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
                     }
                     
                 }
+                if (strcmp(pieces[i].name, "Pawn") == 0)
+                {
+                    if(abs(pieces[i].x - position_x) <=1 && pieces[i].y -1 == position_y) {
+                        return false;
+                    }
+                    else {
+                        continue;
+                    }
+                }
+                
                 
                 else if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, position_x, position_y))
                 {
@@ -372,18 +423,27 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
             {   
                 if (strcmp(pieces[i].name, "King") == 0)
                 {
-                    if ((pieces[i].x == position_x + 1 || pieces[i].x == position_x - 1) || (pieces[i].y == position_y + 1 || pieces[i].y == position_y - 1))
-                    {
+                    if (abs(pieces[i].x - position_x) <= 1 && abs(pieces[i].y - position_y) <= 1) {
+                        printf("lethal move King");
                         return false;
                     }
                     else {
                         continue;
                     }
-                    
                 }
+                if (strcmp(pieces[i].name, "Pawn") == 0)
+                {
+                    if(abs(pieces[i].x - position_x) <=1 && pieces[i].y + 1 == position_y) {
+                        return false;
+                    }
+                    else {
+                        continue;
+                    }
+                }
+                    
                 
                 else if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, position_x, position_y))
-                {
+                {   
                     return false;
                 }
                 
@@ -392,6 +452,9 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
         }
         
         
+    }
+    else {
+        return false;
     }
     
     
@@ -449,4 +512,143 @@ bool is_piece(int x, int y, Piece* pieces, char * color) {
         }
         return false;
     }*/
+}
+
+char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter) {
+    char * fen = calloc(200, sizeof(char));
+    int passed = 0;    
+    for (int i = 0; i < 8; i++)
+    {
+        passed = 0;
+        bool found = false;
+        for (int j = 0; j < 8; j++)
+        {
+            for (int k = 0; k < 32; k++)
+            {
+                if (pieces[k].x == j && pieces[k].y == i)
+                {
+                    if (passed > 0)
+                    {
+                        char passed_char = passed + '0';
+                        char passed_str[2] = {passed_char, '\0'};
+                        strcat(fen, passed_str);
+                        passed = 0;
+                    }
+                    char symbol;
+                    if (pieces[k].name == "Knight")
+                    {
+                        symbol = 'N';    
+                    }
+                    else {
+                        symbol = pieces[k].name[0];
+                    }
+                    if (pieces[k].is_white)
+                    {
+                        symbol = tolower(symbol);
+                    }
+                    char symbol_str[2] = {symbol, '\0'};
+                    strcat(fen, symbol_str);
+                    found = true;
+                    break;
+                    
+                }
+            }
+            if (!found){
+                    passed +=1;
+                    found = false;
+                    if (j == 7)
+                    {
+                        char passed_char = passed + '0';
+                        char passed_str[2] = {passed_char, '\0'};
+                        strcat(fen, passed_str);                   
+                    }
+                    
+                }
+            
+        }
+        strcat(fen, "/");
+        found = false;
+        
+    }
+    if (strcmp(color, "white") == 0)
+    {
+        strcat(fen, " b\n");
+    }
+    else if (strcmp(color, "black") == 0)
+    {
+        strcat(fen, " w\n");
+    }
+    bool whiteK = is_castleling_possible(pieces[20], pieces[23], pieces, "white"); 
+    bool whiteQ = is_castleling_possible(pieces[20], pieces[16], pieces, "white");
+    bool blackK = is_castleling_possible(pieces[4], pieces[7], pieces, "black"); 
+    bool blackQ = is_castleling_possible(pieces[4], pieces[0], pieces, "black");   
+
+    // Jetzt FEN-String aufbauen
+    if (!whiteK && !whiteQ && !blackK && !blackQ) {
+        strcat(fen, " -");
+    } else {
+        if (whiteK) strcat(fen, " K");
+        if (whiteQ) strcat(fen, " Q");
+        if (!whiteK && !whiteQ && blackK && blackQ) strcat(fen, "-");
+        if (blackK) strcat(fen, " k");
+        if (blackQ) strcat(fen, " q");
+        if (!blackK && !blackQ && whiteK && whiteQ) strcat(fen, "-");
+    }
+
+    return fen;
+}
+
+
+bool is_sqare_attacked(int x, int y, Piece* pieces, char* color) {
+    for (int i = 0; i < 32; i++) {
+        if (!pieces[i].is_white && strcmp(color, "black") == 0 || pieces[i].is_white && strcmp(color, "white") == 0) {
+            if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) {
+
+    if (king.is_white != rook.is_white) {
+        return false;
+    }
+    if (strcmp(color, "white") == 0) {
+        
+        if (king.y != 0 || rook.y != 0) {
+            return false;
+        }
+    }
+    else if (strcmp(color, "black") == 0) {
+        if (king.y != 7 || rook.y != 7) {
+            return false;
+        }
+    }
+
+    if (is_sqare_attacked(king.x, king.y, pieces, color)) {
+        return false;
+    }
+    if (king.has_moved || rook.has_moved)
+    {
+        return false;
+    }
+    
+    int step = 0;
+    if (rook.x > king.x) {
+        step = 1;
+    }
+    else if (rook.x < king.x) {
+        step = -1;
+    }
+    for (int x = king.x + step; x != rook.x; x += step) {
+        if (is_piece(x, king.y, pieces, "both")) {
+            return false;
+        }
+        if (is_sqare_attacked(x, king.y, pieces, color)) {
+            return false;
+        }
+    }
+    return true;
 }
