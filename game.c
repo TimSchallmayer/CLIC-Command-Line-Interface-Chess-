@@ -133,7 +133,7 @@ char * introduction() {
     
 }
 
-bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y) {
+bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y, Position passant) {
     bool is_white = !piece.is_white;
     char * color;
     char * opponent_color;
@@ -145,6 +145,17 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
         color = "black";
         opponent_color = "white";
     }
+    if (in_check(pieces, color) && strcmp(piece.name, "King") != 0)
+    {
+        printf("You are in check! You must move your king out of check.\n");
+        return false;
+    }
+    if (!is_move_safe(piece, pieces, origin_x, origin_y, position_x, position_y))
+    {
+        printf("This move would put your king in check!\n");
+        return false;
+    }
+    
 
     if (is_piece(position_x, position_y, pieces, color)) {
         return false;
@@ -163,9 +174,20 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
                 return true;
             }
             
-            else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y + 1 && is_piece(position_x, position_y, pieces, opponent_color)) {
-                return true;
+            else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y + 1) {
+                if (is_piece(position_x, position_y, pieces, opponent_color))
+                {
+                    return true;
+                }
+                else if (position_x == passant.x && position_y == passant.y)
+                {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             }
+            
             else { 
                 return false;
             }    /* code */
@@ -179,8 +201,18 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
             {
                 return true;
             }
-            else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y - 1 && is_piece(position_x, position_y, pieces, opponent_color)) {
-                return true;
+            else if ((position_x == origin_x + 1 || position_x == origin_x -1) && position_y == origin_y - 1) {
+                if (is_piece(position_x, position_y, pieces, opponent_color))
+                {
+                    return true;
+                }
+                else if (position_x == passant.x && position_y == passant.y)
+                {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             }
             else {
                 return false;
@@ -409,7 +441,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
                 }
                 
                 
-                else if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, position_x, position_y))
+                else if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, position_x, position_y, passant))
                 {
                     return false;
                 }
@@ -442,7 +474,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
                 }
                     
                 
-                else if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, position_x, position_y))
+                else if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, position_x, position_y, passant))
                 {   
                     return false;
                 }
@@ -514,7 +546,7 @@ bool is_piece(int x, int y, Piece* pieces, char * color) {
     }*/
 }
 
-char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter) {
+char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter, Position passant) {
     char * fen = calloc(200, sizeof(char));
     int passed = 0;    
     for (int i = 0; i < 8; i++)
@@ -572,11 +604,11 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
     }
     if (strcmp(color, "white") == 0)
     {
-        strcat(fen, " b\n");
+        strcat(fen, " b");
     }
     else if (strcmp(color, "black") == 0)
     {
-        strcat(fen, " w\n");
+        strcat(fen, " w");
     }
     bool whiteK = is_castleling_possible(pieces[20], pieces[23], pieces, "white"); 
     bool whiteQ = is_castleling_possible(pieces[20], pieces[16], pieces, "white");
@@ -587,22 +619,41 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
     if (!whiteK && !whiteQ && !blackK && !blackQ) {
         strcat(fen, " -");
     } else {
-        if (whiteK) strcat(fen, " K");
-        if (whiteQ) strcat(fen, " Q");
+        strcat(fen, " ");
+        if (whiteK) strcat(fen, "K");
+        if (whiteQ) strcat(fen, "Q");
         if (!whiteK && !whiteQ && blackK && blackQ) strcat(fen, "-");
-        if (blackK) strcat(fen, " k");
-        if (blackQ) strcat(fen, " q");
+        if (blackK) strcat(fen, "k");
+        if (blackQ) strcat(fen, "q");
         if (!blackK && !blackQ && whiteK && whiteQ) strcat(fen, "-");
     }
-
+    strcat(fen, " ");
+    if (passant.x >=0 && passant.x <=7 && passant.y >=0 && passant.y <=7)
+    {
+        char file = passant.x + 'a';
+        char rank = passant.y + '1';
+        char passant_str[3] = {file, rank, '\0'};
+        strcat(fen, " ");
+        strcat(fen, passant_str);
+    }
+    else {
+        strcat(fen, "-");
+    }
+    strcat(fen, " ");
+    char halbzug_str[4] = {halbzug_counter + '0', '\0'};
+    strcat(fen, halbzug_str);
+    strcat(fen, " ");
+    char zug_str[4] = {zug_counter + '0', '\0'};
+    strcat(fen, zug_str);
     return fen;
 }
 
 
 bool is_sqare_attacked(int x, int y, Piece* pieces, char* color) {
+    Position passant;
     for (int i = 0; i < 32; i++) {
         if (!pieces[i].is_white && strcmp(color, "black") == 0 || pieces[i].is_white && strcmp(color, "white") == 0) {
-            if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
+            if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y, passant)) {
                 return true;
             }
         }
@@ -651,4 +702,48 @@ bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) 
         }
     }
     return true;
+}
+void terminate_piece(Piece piece) {
+    piece.x = -1;
+    piece.y = -1;
+}
+
+int which_piece(Piece* pieces, int x, int y) {
+    for (int i = 0; i < 32; i++) {
+        if (pieces[i].x == x && pieces[i].y == y) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool in_check(Piece* pieces, char* color) {
+    Piece king;
+    for (int i = 0; i < 32; i++) {
+        if (strcmp(pieces[i].name, "King") == 0) {
+            if (!pieces[i].is_white && strcmp(color, "white") == 0 || pieces[i].is_white && strcmp(color, "black") == 0) {
+                king = pieces[i];
+                break;
+            }
+        }
+    }
+    return is_sqare_attacked(king.x, king.y, pieces, color);
+}
+bool is_move_safe(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y) {
+    bool is_white = !piece.is_white;
+    char * color;
+    if (is_white) color = "white";
+    else color = "black";
+
+    int original_x = piece.x;
+    int original_y = piece.y;
+    piece.x = position_x;
+    piece.y = position_y;
+
+    bool safe = !in_check(pieces, color);
+
+    piece.x = original_x;
+    piece.y = original_y;
+
+    return safe;
 }
