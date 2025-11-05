@@ -1,0 +1,49 @@
+# CMake generation dependency list for this directory.
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cJSONConfig.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cJSONConfigVersion.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cjson-debug.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cjson-release.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cjson.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cjson_utils-debug.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cjson_utils-release.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/cjson/cjson_utils.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/curl/CURLConfig.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/curl/CURLConfigVersion.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/curl/CURLTargets-debug.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/curl/CURLTargets-release.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/curl/CURLTargets.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/curl/vcpkg-cmake-wrapper.cmake
+E:/Dokumente/Code/C++/vcpkg/installed/x64-windows/share/zlib/vcpkg-cmake-wrapper.cmake
+E:/Dokumente/Code/C++/vcpkg/scripts/buildsystems/vcpkg.cmake
+E:/Dokumente/Code/CS50/FInal Projekt/CLIC/CMakeLists.txt
+E:/Dokumente/Code/CS50/FInal Projekt/CLIC/build/CMakeFiles/4.0.0-rc1/CMakeCCompiler.cmake
+E:/Dokumente/Code/CS50/FInal Projekt/CLIC/build/CMakeFiles/4.0.0-rc1/CMakeRCCompiler.cmake
+E:/Dokumente/Code/CS50/FInal Projekt/CLIC/build/CMakeFiles/4.0.0-rc1/CMakeSystem.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeCInformation.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeCommonLanguageInclude.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeDependentOption.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeFindDependencyMacro.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeGenericSystem.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeInitializeConfigs.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeLanguageInformation.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeRCInformation.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeSystemSpecificInformation.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/CMakeSystemSpecificInitialize.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Compiler/MSVC-C.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Compiler/MSVC.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/FindPackageHandleStandardArgs.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/FindPackageMessage.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/FindZLIB.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Internal/CMakeCLinkerInformation.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Internal/CMakeCommonLinkerInformation.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Linker/MSVC-C.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Linker/MSVC.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Platform/Linker/Windows-MSVC-C.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Platform/Linker/Windows-MSVC.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Platform/Windows-Initialize.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Platform/Windows-MSVC-C.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Platform/Windows-MSVC.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Platform/Windows.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/Platform/WindowsPaths.cmake
+E:/Dokumente/Code/Cmake/share/cmake-4.0/Modules/SelectLibraryConfigurations.cmake
