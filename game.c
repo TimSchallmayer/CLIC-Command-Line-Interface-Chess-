@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <cjson/cJSON.h>
+#include <cjson/cJSON_Utils.h>
+#include <curl/curl.h>
 
 
 void draw_chessboard(Piece* pieces, char* color) {
@@ -83,7 +86,7 @@ char * introduction() {
     char choice;
     printf("Welcome to Command-Line Chess!\nFor the game instructions, please type 'help'.\n");
     printf("Would you like to play as white, black or random? ");
-    char* color = malloc(6 * sizeof(char));
+    char* color = malloc(6);
     while (true) {
         scanf("%5s", color);
         for (int i = 0; color[i]; i++) {
@@ -145,16 +148,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
         color = "black";
         opponent_color = "white";
     }
-    if (in_check(pieces, color) && strcmp(piece.name, "King") != 0)
-    {
-        printf("You are in check! You must move your king out of check.\n");
-        return false;
-    }
-    if (!is_move_safe(piece, pieces, origin_x, origin_y, position_x, position_y))
-    {
-        printf("This move would put your king in check!\n");
-        return false;
-    }
+
     
 
     if (is_piece(position_x, position_y, pieces, color)) {
@@ -484,12 +478,8 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
         }
         
         
-    }
-    else {
-        return false;
-    }
-    
-    
+    }    
+    return false;
 }
 
 bool is_piece(int x, int y, Piece* pieces, char * color) {
@@ -548,6 +538,7 @@ bool is_piece(int x, int y, Piece* pieces, char * color) {
 
 char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter, Position passant) {
     char * fen = calloc(200, sizeof(char));
+    printf("Creating FEN...\n");
     int passed = 0;    
     for (int i = 0; i < 8; i++)
     {
@@ -598,10 +589,11 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
                 }
             
         }
-        strcat(fen, "/");
+        if (i != 7) strcat(fen, "/");
         found = false;
         
     }
+    printf("FEN so far: %s\n", fen);
     if (strcmp(color, "white") == 0)
     {
         strcat(fen, " b");
@@ -610,12 +602,12 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
     {
         strcat(fen, " w");
     }
+    printf("castling rights check...\n");
     bool whiteK = is_castleling_possible(pieces[20], pieces[23], pieces, "white"); 
     bool whiteQ = is_castleling_possible(pieces[20], pieces[16], pieces, "white");
     bool blackK = is_castleling_possible(pieces[4], pieces[7], pieces, "black"); 
     bool blackQ = is_castleling_possible(pieces[4], pieces[0], pieces, "black");   
-
-    // Jetzt FEN-String aufbauen
+    printf("White King-side castling possible");
     if (!whiteK && !whiteQ && !blackK && !blackQ) {
         strcat(fen, " -");
     } else {
@@ -628,6 +620,7 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
         if (!blackK && !blackQ && whiteK && whiteQ) strcat(fen, "-");
     }
     strcat(fen, " ");
+    printf("En Passant target square: ");
     if (passant.x >=0 && passant.x <=7 && passant.y >=0 && passant.y <=7)
     {
         char file = passant.x + 'a';
@@ -645,14 +638,28 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
     strcat(fen, " ");
     char zug_str[4] = {zug_counter + '0', '\0'};
     strcat(fen, zug_str);
+    printf("Generated FEN: %s\n", fen);
     return fen;
 }
 
 
 bool is_sqare_attacked(int x, int y, Piece* pieces, char* color) {
+    printf("1");
     Position passant;
+    passant.x = -1;
+    passant.y = -1;
     for (int i = 0; i < 32; i++) {
-        if (!pieces[i].is_white && strcmp(color, "black") == 0 || pieces[i].is_white && strcmp(color, "white") == 0) {
+        if (pieces[i].is_white && strcmp(color, "black") == 0 || !pieces[i].is_white && strcmp(color, "white") == 0) {
+            if (strcmp(pieces[i].name, "King") == 0)
+            {
+                if (abs(pieces[i].x - x) <= 1 && abs(pieces[i].y - y) <= 1) {
+                    return true;
+                } else {
+                    continue;
+                }
+                printf("2");
+            }
+            
             if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y, passant)) {
                 return true;
             }
@@ -662,7 +669,6 @@ bool is_sqare_attacked(int x, int y, Piece* pieces, char* color) {
 }
 
 bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) {
-
     if (king.is_white != rook.is_white) {
         return false;
     }
@@ -677,10 +683,11 @@ bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) 
             return false;
         }
     }
-
+    printf("Checking if square is attacked during castling...\n");
     if (is_sqare_attacked(king.x, king.y, pieces, color)) {
         return false;
     }
+    printf("Checking if pieces have moved...\n");
     if (king.has_moved || rook.has_moved)
     {
         return false;
@@ -693,6 +700,7 @@ bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) 
     else if (rook.x < king.x) {
         step = -1;
     }
+    printf("forloop");
     for (int x = king.x + step; x != rook.x; x += step) {
         if (is_piece(x, king.y, pieces, "both")) {
             return false;
@@ -746,4 +754,14 @@ bool is_move_safe(Piece piece, Piece* pieces, int origin_x, int origin_y, int po
     piece.y = original_y;
 
     return safe;
+}
+
+char * make_json(API_call call) {
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "fen", call.fen);
+    cJSON_AddNumberToObject(json, "depth", call.depth);
+    cJSON_AddNumberToObject(json, "max_thinking_time", call.max_thinking_time);
+    char * json_str = cJSON_Print(json);
+    cJSON_Delete(json);
+    return json_str;
 }
