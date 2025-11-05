@@ -4,12 +4,17 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "chess.h"
+#include <cjson/cJSON.h>
+#include <cjson/cJSON_Utils.h>
+#include <curl/curl.h>
 
 int main(int argc, char* argv[]) {
     system("powershell -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\"");
     Piece* pieces = malloc(32 * sizeof(Piece));
     Piece* terminated_pieces = malloc(32 * sizeof(Piece));
     Position passant;
+    passant.x = -1;
+    passant.y = -1;
     int passantr_counter = 0;
 
     if (pieces == NULL) {
@@ -22,12 +27,15 @@ int main(int argc, char* argv[]) {
 
     create_pieces(pieces);
     draw_chessboard(pieces, play_color);
+    printf("made chessboard\n");
     char* data = make_fen(pieces, play_color, zug_counter, halbzug_counter, passant);
     printf("\nFEN: %s\n", data);
     API_call api_call;
     api_call.fen = data;
     api_call.depth = 12;
     api_call.max_thinking_time = 5000;
+    char* json_request = make_json(api_call);
+    printf("JSON Request: %s\n", json_request);
     while (1) {
         char piece[7];     
         char position[3];   
@@ -97,12 +105,62 @@ int main(int argc, char* argv[]) {
             }
 
         }
+        if (in_check(pieces, play_color) && strcmp(choosen_piece.name, "King") != 0)
+        {
+            printf("You are in check! You must move your king out of check.\n");
+            continue;
+        }
+        if (!is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y))
+        {
+            printf("This move would put your king in check!\n");
+            continue;
+        }
         
         int i = which_piece(pieces, origin_x, origin_y);
+        if (i == -1) {
+            printf("Unknown piece, origin or position.\n");
+            continue;
+        }
         printf("Moving %s to %s\n", pieces[i].name, position);
         if (strcmp(pieces[i].name, "Pawn") == 0)
         {
             halbzug_counter = 0;
+            if (position_y == (pieces[i].is_white ? 1 : 8))
+            {   
+                bool invalid = true;
+                while (invalid)
+                {
+                    printf("Pawn promoted to:");
+                    char promotion_choice[7];
+                    scanf("%6s", promotion_choice);
+                    promotion_choice[0] = toupper(promotion_choice[0]);
+                    pieces[i].name = promotion_choice;
+                    if (strcmp(promotion_choice, "Knight") == 0)
+                    {
+                        pieces[i].symbol = pieces[i].is_white ? "♘" : "♞";
+                        invalid = false;
+                    }
+                    else if (strcmp(promotion_choice, "Bishop") == 0)
+                    {
+                        pieces[i].symbol = pieces[i].is_white ? "♗" : "♝";
+                        invalid = false;
+                    }
+                    else if (strcmp(promotion_choice, "Rook") == 0)
+                    {
+                        pieces[i].symbol = pieces[i].is_white ? "♖" : "♜";
+                        invalid = false;
+                    }
+                    else if (strcmp(promotion_choice, "Queen") == 0)
+                    {
+                        pieces[i].symbol = pieces[i].is_white ? "♕" : "♛";
+                        invalid = false;
+                    }
+                    else {
+                        printf("Invalid promotion choice!\n");
+                        invalid = true;
+                }      
+            }
+            
             if (abs(position_y - origin_y) == 2) {
                 passant.x = origin_x;
                 passant.y = (origin_y + position_y) / 2;  
@@ -115,152 +173,6 @@ int main(int argc, char* argv[]) {
         pieces[i].y = position_y;
         pieces[i].has_moved = true;
 
-        if (piece[0] == 'r' || strcmp(piece, "rook") == 0) {
-            printf("   Moving Rook to %s\n", position);
-
-            if (strcmp(play_color, "black") == 0) {
-                if (pieces[0].x == origin_x && pieces[0].y == origin_y) {
-                    pieces[0].x = position_x;
-                    pieces[0].y = position_y;
-                    pieces[0].has_moved = true;
-                }
-                else if (pieces[7].x == origin_x && pieces[7].y == origin_y) {
-                    pieces[7].x = position_x;
-                    pieces[7].y = position_y;
-                    pieces[7].has_moved = true;
-                }
-            } else {
-                if (pieces[16].x == origin_x && pieces[16].y == origin_y) {
-                    pieces[16].x = position_x;
-                    pieces[16].y = position_y;
-                    pieces[16].has_moved = true;
-                }
-                else if (pieces[23].x == origin_x && pieces[23].y == origin_y) {
-                    pieces[23].x = position_x;
-                    pieces[23].y = position_y;
-                    pieces[23].has_moved = true;
-                }
-            }
-        }
-        else if (tolower(piece[0]) == 'p' || strcmp(piece, "pawn") == 0) {
-            halbzug_counter = 0;
-            if (abs(position_y - origin_y) == 2) {
-                passant.x = origin_x;
-                passant.y = (origin_y + position_y) / 2;  
-            } else {
-                passant.x = -1;
-                passant.y = -1;
-            }
-            printf("   Moving Pawn to %s\n", position);
-            if (strcmp(play_color, "black") == 0) {
-                for (int i = 8; i < 16; i++) {
-                    if (pieces[i].x == origin_x && pieces[i].y == origin_y) {
-                        pieces[i].x = position_x;
-                        pieces[i].y = position_y;
-                        pieces[i].has_moved = true;
-                        break;
-                    }
-                }
-            } else {
-                for (int i = 24; i < 32; i++) {
-                    if (pieces[i].x == origin_x && pieces[i].y == origin_y) {
-                        pieces[i].x = position_x;
-                        pieces[i].y = position_y;
-                        pieces[i].has_moved = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        else if (piece[0] == 'n' || strcmp(piece, "knight") == 0) {
-            printf("   Moving Knight to %s\n", position);
-            if (strcmp(play_color, "black") == 0) {
-                if (pieces[1].x == origin_x && pieces[1].y == origin_y) {
-                    pieces[1].x = position_x;
-                    pieces[1].y = position_y;
-                    pieces[1].has_moved = true;
-                } else if (pieces[6].x == origin_x && pieces[6].y == origin_y) {
-                    pieces[6].x = position_x;
-                    pieces[6].y = position_y;
-                    pieces[6].has_moved = true;
-                }
-            } else {
-                if (pieces[17].x == origin_x && pieces[17].y == origin_y) {
-                    pieces[17].x = position_x;
-                    pieces[17].y = position_y;
-                    pieces[17].has_moved = true;
-                } else if (pieces[22].x == origin_x && pieces[22].y == origin_y) {
-                    pieces[22].x = position_x;
-                    pieces[22].y = position_y;
-                    pieces[22].has_moved = true;
-                }
-            }
-        }
-
-        else if (piece[0] == 'b' || strcmp(piece, "bishop") == 0) {
-            printf("   Moving Bishop to %s\n", position);
-            if (strcmp(play_color, "black") == 0) {
-                if (pieces[2].x == origin_x && pieces[2].y == origin_y) {
-                    pieces[2].x = position_x;
-                    pieces[2].y = position_y;
-                    pieces[2].has_moved = true;
-                } else if (pieces[5].x == origin_x && pieces[5].y == origin_y) {
-                    pieces[5].x = position_x;
-                    pieces[5].y = position_y;
-                    pieces[5].has_moved = true;
-                }
-            } else {
-                if (pieces[18].x == origin_x && pieces[18].y == origin_y) {
-                    pieces[18].x = position_x;
-                    pieces[18].y = position_y;
-                    pieces[18].has_moved = true;
-                } else if (pieces[21].x == origin_x && pieces[21].y == origin_y) {
-                    pieces[21].x = position_x;
-                    pieces[21].y = position_y;
-                    pieces[21].has_moved = true;
-                }
-            }
-        }
-
-        else if (piece[0] == 'q' || strcmp(piece, "queen") == 0) {
-            printf("   Moving Queen to %s\n", position);
-            if (strcmp(play_color, "black") == 0) {
-                if (pieces[3].x == origin_x && pieces[3].y == origin_y) {
-                    pieces[3].x = position_x;
-                    pieces[3].y = position_y;
-                    pieces[3].has_moved = true;
-                }
-            } else {
-                if (pieces[19].x == origin_x && pieces[19].y == origin_y) {
-                    pieces[19].x = position_x;
-                    pieces[19].y = position_y;
-                    pieces[19].has_moved = true;
-                }
-            }
-        }
-
-        else if (piece[0] == 'k' || strcmp(piece, "king") == 0) {
-            printf("   Moving King to %s\n", position);
-            if (strcmp(play_color, "black") == 0) {
-                if (pieces[4].x == origin_x && pieces[4].y == origin_y) {
-                    pieces[4].x = position_x;
-                    pieces[4].y = position_y;
-                    pieces[4].has_moved = true;
-                }
-            } else {
-                if (pieces[20].x == origin_x && pieces[20].y == origin_y) {
-                    pieces[20].x = position_x;
-                    pieces[20].y = position_y;
-                    pieces[20].has_moved = true;
-                }
-            }
-        }
-        else {
-            printf("Unknown piece, origin or position.\n");
-            continue;
-        }
-
         draw_chessboard(pieces, play_color);
         halbzug_counter++;
         // Hier kommt noch der API coll
@@ -269,9 +181,8 @@ int main(int argc, char* argv[]) {
             passant.x = -1;
             passant.y = -1;
         }
-
     }
     free(pieces);
     free(terminated_pieces);
     return 0;
-}
+}}
