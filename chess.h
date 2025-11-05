@@ -35,4 +35,7 @@ bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color);
 bool is_sqare_attacked(int x, int y, Piece* pieces, char* color);
 void terminate_piece(Piece piece);
 int which_piece(Piece* pieces, int x, int y);
+bool is_move_safe(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y);
+bool in_check(Piece* pieces, char* color);
+char * make_json(API_call call);
 #endif
