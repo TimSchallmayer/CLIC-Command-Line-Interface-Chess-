@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
+#include <cjson/cJSON.h>
 #ifndef CHESSBOARD_H
 #define CHESSBOARD_H
 
@@ -23,6 +24,10 @@ typedef struct {
     int max_thinking_time;
 
 } API_call;
+typedef struct {
+    char * data;
+    size_t length;
+} Buffer;
 
 // Prototypen der Funktionen
 void draw_chessboard(Piece* pieces, char* color);
@@ -33,9 +38,13 @@ bool is_piece(int x, int y, Piece* pieces, char* color);
 char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter, Position passant);
 bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color);
 bool is_sqare_attacked(int x, int y, Piece* pieces, char* color);
-void terminate_piece(Piece piece);
+void terminate_piece(Piece *piece);
 int which_piece(Piece* pieces, int x, int y);
 bool is_move_safe(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y);
 bool in_check(Piece* pieces, char* color);
 char * make_json(API_call call);
+char * curl(char* json);
+int callback(void *content, size_t size, size_t nmemb, void *user_pointer);
+void api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Position* passant, Piece* terminated_pieces);
+void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, Position* passant, char * api_color);
 #endif
