@@ -82,9 +82,30 @@ void create_pieces(Piece* pieces) {
         pieces[24 + i] = (Piece){"Pawn", "♟", i, 1, false, false};
     }
 }
-char * introduction() {
+char * introduction(int * difficulty) {
     char choice;
     printf("Welcome to Command-Line Chess!\nFor the game instructions, please type 'help'.\n");
+    bool valid_input = true;
+    while (valid_input) {
+        printf("Please enter your desired difficulty level (1-18) or press Enter to keep the default (12): ");
+        
+        char line[16];
+        fgets(line, sizeof(line), stdin); // liest die ganze Zeile inkl. Enter
+        
+        if (line[0] == '\n') {
+            *difficulty = 12; // Standardwert
+            valid_input = false;
+            break;
+        }
+
+        int diff = atoi(line); // sicherer als scanf hier
+        if (diff >= 1 && diff <= 18) {
+            *difficulty = diff;
+            valid_input = false;
+        } else {
+            printf("Invalid input. Try again.\n");
+        }
+}
     printf("Would you like to play as white, black or random? ");
     char* color = malloc(6);
     while (true) {
@@ -116,7 +137,7 @@ char * introduction() {
             } 
             return color;
         }
-         
+        
         
         else if (strcmp(color,"help") == 0 ||  color[0] == 'h') {
             printf("GAME INTRODUCTIONS: \n");
@@ -794,63 +815,66 @@ int callback(void *content, size_t size, size_t nmemb, void *user_pointer) {
 void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, Position* passant, char * api_color) 
 {   
     printf("Processing player move...\n");
+    int i = which_piece(pieces, origin_x, origin_y);
     Piece choosen_piece;
     bool found = false;
     for (int i = 0; i < 32; i++) {
         if (pieces[i].x == origin_x && pieces[i].y == origin_y && ((pieces[i].is_white == false && (strcmp(play_color, "white") == 0 || strcmp(api_color, "white") == 0)) ||
-           (pieces[i].is_white == true && (strcmp(play_color, "black") == 0 || strcmp(api_color, "black") == 0)))) 
+            (pieces[i].is_white == true && (strcmp(play_color, "black") == 0 || strcmp(api_color, "black") == 0)))) 
         {
             choosen_piece = pieces[i];
             found = true;
             break;
         }
     }
-
-    if (!found) {
-        printf("No matching piece found at origin.\n");
-        return;
-    }
-    printf("Chosen piece: %s", choosen_piece.name);
-    if (origin_x == position_x && origin_y == position_y) {
-        printf("Invalid position!\n");
-        return;
-    }
-
-    if (!valid_move(choosen_piece, pieces, origin_x, origin_y, position_x, position_y, *passant)) {
-        printf("Invalid move!\n");
-        return;
-    }
-
-    if (is_piece(position_x, position_y, pieces, "both") || (position_x == passant->x && position_y == passant->y)) 
+    if (api_color != NULL)
     {
-        int index = -1;
-        if (position_x == passant->x && passant->y == position_y && strcmp(choosen_piece.name, "pawn") == 0) {
-            index = which_piece(pieces, position_x, passant->y + (choosen_piece.is_white ? 1 : -1));
-            passant->y = -1;
-            passant->x = -1;
-        } else {
-            index = which_piece(pieces, position_x, position_y);
+
+        if (!found) {
+            printf("No matching piece found at origin.\n");
+            return;
         }
-        if (index != -1) {
-            printf("%s captures %s\n", choosen_piece.name, pieces[index].name);
-            terminate_piece(&pieces[index]);
+        printf("Chosen piece: %s", choosen_piece.name);
+        if (origin_x == position_x && origin_y == position_y) {
+            printf("Invalid position!\n");
+            return;
         }
-    }
 
-    if (in_check(pieces, play_color) && strcmp(choosen_piece.name, "King") != 0) {
-        printf("You are in check! Move your king out of check.\n");
-        return;
-    }
+        if (!valid_move(choosen_piece, pieces, origin_x, origin_y, position_x, position_y, *passant)) {
+            printf("Invalid move!\n");
+            return;
+        }
 
-    if (!is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
-        printf("This move would put your king in check!\n");
-        return;
-    }
+        if (is_piece(position_x, position_y, pieces, "both") || (position_x == passant->x && position_y == passant->y)) 
+        {
+            int index = -1;
+            if (position_x == passant->x && passant->y == position_y && strcmp(choosen_piece.name, "pawn") == 0) {
+                index = which_piece(pieces, position_x, passant->y + (choosen_piece.is_white ? 1 : -1));
+                passant->y = -1;
+                passant->x = -1;
+            } else {
+                index = which_piece(pieces, position_x, position_y);
+            }
+            if (index != -1) {
+                printf("%s captures %s\n", choosen_piece.name, pieces[index].name);
+                terminate_piece(&pieces[index]);
+            }
+        }
 
-    int i = which_piece(pieces, origin_x, origin_y);
-    if (i == -1) {
-        printf("Unknown piece.\n");
-        return;
+        if (in_check(pieces, play_color) && strcmp(choosen_piece.name, "King") != 0) {
+            printf("You are in check! Move your king out of check.\n");
+            return;
+        }
+
+        if (!is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
+            printf("This move would put your king in check!\n");
+            return;
+        }
+
+        if (i == -1) {
+            printf("Unknown piece.\n");
+            return;
+        }
     }
     char* position = malloc(3);
     position[0] = position_x + 'a';
