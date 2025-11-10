@@ -32,7 +32,7 @@ typedef struct {
 // Prototypen der Funktionen
 void draw_chessboard(Piece* pieces, char* color);
 void create_pieces(Piece* pieces);
-char * introduction();
+char * introduction(int* difficulty);
 bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y, Position passant);
 bool is_piece(int x, int y, Piece* pieces, char* color);
 char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter, Position passant);
