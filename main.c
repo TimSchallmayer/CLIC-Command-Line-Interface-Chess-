@@ -100,8 +100,8 @@ int main(int argc, char* argv[]) {
             if (is_piece(position_x, position_y, pieces, "both") || (position_x == passant.x && position_y == passant.y)) 
             {
                 int index = -1;
-                if (position_x == passant.x && passant.y == position_y && strcmp(choosen_piece.name, "pawn") == 0) {
-                    index = which_piece(pieces, position_x, passant.y + (choosen_piece.is_white ? 1 : -1));
+                if (position_x == passant.x && passant.y == position_y && strcmp(choosen_piece.name, "Pawn") == 0) {
+                    index = which_piece(pieces, passant.x, passant.y + (choosen_piece.is_white ? 1 : -1));
                     passant.y = -1;
                     passant.x = -1;
                 } else {
@@ -128,9 +128,11 @@ int main(int argc, char* argv[]) {
                 printf("Unknown piece.\n");
                 continue;
             }
-            make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, &passant, NULL);
+            API_response user_respsonse;
+            user_respsonse.response = false;
+            make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, &passant, NULL, user_respsonse);
             printf("making fen");
-            char* data = make_fen(pieces, play_color, zug_counter, halbzug_counter, passant);
+            char* data = make_fen(pieces, play_color, zug_counter, halbzug_counter, &passant);
             printf("fen made");
             API_call api_call;
             api_call.fen = data;
@@ -140,10 +142,11 @@ int main(int argc, char* argv[]) {
             char * json_answer = curl(json_request);
             printf("answer received");
             api_move(cJSON_Parse(json_answer), pieces, play_color, &zug_counter, &halbzug_counter, &passant, terminated_pieces);
+            zug_counter++;
         }
         else {
             printf("Waiting for opponent's move...\n");
-            char* data = make_fen(pieces, play_color, zug_counter, halbzug_counter, passant);
+            char* data = make_fen(pieces, play_color, zug_counter, halbzug_counter, &passant);
             API_call api_call;
             api_call.fen = data;
             api_call.depth = difficulty;
@@ -217,8 +220,9 @@ int main(int argc, char* argv[]) {
                 if (is_piece(position_x, position_y, pieces, "both") || (position_x == passant.x && position_y == passant.y)) 
                 {
                     int index = -1;
-                    if (position_x == passant.x && passant.y == position_y && strcmp(choosen_piece.name, "pawn") == 0) {
-                        index = which_piece(pieces, position_x, passant.y + (choosen_piece.is_white ? 1 : -1));
+                    if (position_x == passant.x && passant.y == position_y && strcmp(choosen_piece.name, "Pawn") == 0) {
+                        rintf("En Passant impossible!\n");
+                        index = which_piece(pieces, passant.x, passant.y + (choosen_piece.is_white ? 1 : -1));
                         passant.y = -1;
                         passant.x = -1;
                     } else {
@@ -245,11 +249,13 @@ int main(int argc, char* argv[]) {
                     printf("Unknown piece.\n");
                     continue;
                 }
-                make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, &passant, NULL);
+                API_response user_respsonse;
+                user_respsonse.response = false;
+                make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, &passant, NULL, user_respsonse);
                 printf("Move made.\n");
                 valid_input = true;
             }
-            
+            zug_counter++;
 
         }
     
