@@ -428,6 +428,23 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
     }
     else if (strcmp(piece.name, "King") == 0)
     {
+        if (origin_x - position_x == 2 )
+        {
+            if (is_castleling_possible(piece, pieces[which_piece(pieces, origin_x - 4, piece.y)], pieces, color) && origin_x > position_x)
+            {
+                pieces[which_piece(pieces, origin_x - 4, piece.y)].x = origin_x -1;
+                return true;
+            }
+        
+            if (is_castleling_possible(piece, pieces[which_piece(pieces, origin_x + 3, piece.y)], pieces, color) && position_x > origin_x)
+            {
+                pieces[which_piece(pieces, origin_x + 3, piece.y)].x = origin_x +1;
+                return true;
+            }
+            
+        }
+        
+        
         if (abs(position_x - origin_x) > 1 || abs(position_y - origin_y) > 1) {
             return false;
         }
@@ -557,7 +574,7 @@ bool is_piece(int x, int y, Piece* pieces, char * color) {
     }*/
 }
 
-char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter, Position passant) {
+char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter, Position *passant) {
     char * fen = calloc(200, sizeof(char));
     if (!fen) return NULL;
 
@@ -628,10 +645,10 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
         if (!blackK && !blackQ && whiteK && whiteQ) strcat(fen, "-");
     }
     strcat(fen, " ");
-    if (passant.x >=0 && passant.x <=7 && passant.y >=0 && passant.y <=7)
+    if (passant->x >=0 && passant->x <=7 && passant->y >=0 && passant->y <=7)
     {
-        char file = passant.x + 'a';
-        char rank = passant.y + '1';
+        char file = passant->x + 'a';
+        char rank = passant->y + '1';
         char passant_str[3] = {file, rank, '\0'};
         strcat(fen, passant_str);
     }
@@ -688,7 +705,8 @@ bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) 
             return false;
         }
     }
-    if (is_sqare_attacked(king.x, king.y, pieces, color)) {
+    if (is_sqare_attacked(king.x, king.y, pieces, color)) 
+    {
         return false;
     }
     if (king.has_moved || rook.has_moved)
@@ -812,7 +830,7 @@ int callback(void *content, size_t size, size_t nmemb, void *user_pointer) {
 
     return huuge;
 }
-void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, Position* passant, char * api_color) 
+void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, Position* passant, char * api_color, API_response respsonse) 
 {   
     printf("Processing player move...\n");
     int i = which_piece(pieces, origin_x, origin_y);
@@ -829,7 +847,12 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
     }
     if (api_color != NULL)
     {
+        if (respsonse.mate == 0) {
+            printf("%s\n", respsonse.text);
+            printf("Game Over!\n");
+            exit(0);
 
+        }
         if (!found) {
             printf("No matching piece found at origin.\n");
             return;
@@ -848,8 +871,9 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
         if (is_piece(position_x, position_y, pieces, "both") || (position_x == passant->x && position_y == passant->y)) 
         {
             int index = -1;
-            if (position_x == passant->x && passant->y == position_y && strcmp(choosen_piece.name, "pawn") == 0) {
-                index = which_piece(pieces, position_x, passant->y + (choosen_piece.is_white ? 1 : -1));
+            if (position_x == passant->x && passant->y == position_y && strcmp(choosen_piece.name, "Pawn") == 0) {
+                printf("En Passant impossible!\n");
+                index = which_piece(pieces, passant->x, passant->y + (choosen_piece.is_white ? 1 : -1));
                 passant->y = -1;
                 passant->x = -1;
             } else {
@@ -883,16 +907,19 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
     printf("  Moving %s to %s\n", pieces[i].name, position);
 
     if (strcmp(pieces[i].name, "Pawn") == 0) {
-        *halbzug_counter = 0;
-        if (position_y == (pieces[i].is_white ? 1 : 8)) {   
+        if (position_y == (pieces[i].is_white ? 1 : 8) && api_color == NULL) {   
             bool invalid = true;
-            while (invalid) {
+            while (invalid && !respsonse.response) {
                 printf("Pawn promoted to: ");
                 char promotion_choice[7];
                 scanf("%6s", promotion_choice);
                 promotion_choice[0] = toupper(promotion_choice[0]);
-                pieces[i].name = promotion_choice;
                 invalid = false;
+                if (strcmp(promotion_choice, "Knight") != 0 && strcmp(promotion_choice, "Bishop") != 0 && strcmp(promotion_choice, "Rook") != 0 && strcmp(promotion_choice, "Queen") != 0) {
+                    printf("Invalid promotion choice!\n");
+                    invalid = true;
+                    continue;
+                }
                 if (strcmp(promotion_choice, "Knight") == 0)
                     pieces[i].symbol = pieces[i].is_white ? "♘" : "♞";
                 else if (strcmp(promotion_choice, "Bishop") == 0)
@@ -901,13 +928,35 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
                     pieces[i].symbol = pieces[i].is_white ? "♖" : "♜";
                 else if (strcmp(promotion_choice, "Queen") == 0)
                     pieces[i].symbol = pieces[i].is_white ? "♕" : "♛";
-                else {
-                    printf("Invalid promotion choice!\n");
-                    invalid = true;
+                strcpy(pieces[i].name, promotion_choice);                
+            }
+            if (respsonse.is_promotion && respsonse.response) {      
+                char promotion = respsonse.promotion_choice;
+                if (promotion == 'n') {
+                     pieces[i].symbol = pieces[i].is_white ? "♘" : "♞";
+                     strcpy(pieces[i].name, "Knight");
+                    }
+                else if (promotion == 'b')
+                {
+                    pieces[i].symbol = pieces[i].is_white ? "♗" : "♝";
+                    strcpy(pieces[i].name, "Bishop");
                 }
-            }      
-        }
+                else if (promotion == 'r') {
+                    pieces[i].symbol = pieces[i].is_white ? "♖" : "♜";
+                    strcpy(pieces[i].name, "Rook");
+                }
+                else if (promotion == 'q') {
+                    strcpy(pieces[i].name, "Queen");
+                    pieces[i].symbol = pieces[i].is_white ? "♕" : "♛";
+                }
+
+
+
+            }
+            return;
+    }
         if (abs(position_y - origin_y) == 2) { 
+            printf("En Passant possible!\n");
 
             int ep_x = origin_x;
             int ep_y = (origin_y + position_y) / 2;
@@ -918,6 +967,7 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
                     if (pieces[i].is_white != choosen_piece.is_white && pieces[i].y == ep_y) {
                         if (pieces[i].x == ep_x - 1 || pieces[i].x == ep_x + 1) {
                             can_capture = true;
+                            printf("En Passant possible!\n");
                             break;
                         }
                     }
@@ -943,13 +993,18 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
     printf("Move completed.\n");
     draw_chessboard(pieces, play_color);
     printf("Board after move:\n");
-    (*halbzug_counter)++;
-    (*zug_counter)++;
-
+    if (strcmp(pieces[i].name, "Pawn") == 0)
+    {
+        (*halbzug_counter) = 0;
+    }
+    else {
+        (*halbzug_counter)++;
+    }
+/*
     if (!(abs(position_y - origin_y) == 2 && strcmp(pieces[i].name, "Pawn") == 0)) {
         passant->x = -1;
         passant->y = -1;
-    }
+    }*/
     return;
 }
 void api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Position* passant, Piece* terminated_pieces) {
@@ -957,12 +1012,40 @@ void api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_co
     cJSON* piece = cJSON_GetObjectItemCaseSensitive(response_json, "piece");
     cJSON* from = cJSON_GetObjectItemCaseSensitive(response_json, "from");
     cJSON* to = cJSON_GetObjectItemCaseSensitive(response_json, "to");
+    cJSON* promotion = cJSON_GetObjectItemCaseSensitive(response_json, "promotion");
+    cJSON* is_promotion = cJSON_GetObjectItemCaseSensitive(response_json, "isPromotion");
+    cJSON* is_castle = cJSON_GetObjectItemCaseSensitive(response_json, "isCastling");
+    cJSON* mate_sqs = cJSON_GetObjectItemCaseSensitive(response_json, "mate");
+    cJSON* msg = cJSON_GetObjectItemCaseSensitive(response_json, "text");
     printf("API move received: %s from %s to %s\n", piece->valuestring, from->valuestring, to->valuestring);
     int origin_x = tolower(from->valuestring[0]) - 'a';
     int origin_y = from->valuestring[1] - '1';
     int position_x = tolower(to->valuestring[0]) - 'a';
     int position_y = to->valuestring[1] - '1';
+    bool ispromotion = cJSON_IsTrue(is_promotion);
+    char promotion_choice = 'f';
+    if (ispromotion)
+    {
+        promotion_choice = promotion->valuestring[0];
+    }
+    
+    bool iscastling = cJSON_IsTrue(is_castle);
+    int mate = 1000000;
+    if (mate_sqs && cJSON_IsNumber(mate_sqs)) {
+        mate = mate_sqs->valueint;
+    }
+    printf("1");
+    char * text = msg->valuestring;
+    API_response api_response;
+    api_response.is_promotion = ispromotion;
+    api_response.mate = mate;
+    api_response.is_castling = iscastling;
+    api_response.promotion_choice = promotion_choice;
+    api_response.text = strdup(msg->valuestring);
+    api_response.response = true;
     char * opponent_color = (strcmp(play_color, "white") == 0) ? "black" : "white";
-    printf("API moves %s from %s to %s\n", piece->valuestring, from->valuestring, to->valuestring);
-    make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, zug_counter, halbzug_counter, passant, opponent_color);
+    printf("API moves\n");
+    make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, zug_counter, halbzug_counter, passant, opponent_color, api_response);
+    free(text);
+    return;
 }
