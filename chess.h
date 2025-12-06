@@ -29,13 +29,23 @@ typedef struct {
     size_t length;
 } Buffer;
 
+typedef struct {
+    bool response;
+    bool is_promotion;
+    char promotion_choice;
+    int mate;
+    bool is_castling;
+    char * text;
+    char* turn;
+} API_response;
+
 // Prototypen der Funktionen
 void draw_chessboard(Piece* pieces, char* color);
 void create_pieces(Piece* pieces);
 char * introduction(int* difficulty);
-bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y, Position passant);
+bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y);
 bool is_piece(int x, int y, Piece* pieces, char* color);
-char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter, Position passant);
+char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counter);
 bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color);
 bool is_sqare_attacked(int x, int y, Piece* pieces, char* color);
 void terminate_piece(Piece *piece);
@@ -45,6 +55,7 @@ bool in_check(Piece* pieces, char* color);
 char * make_json(API_call call);
 char * curl(char* json);
 int callback(void *content, size_t size, size_t nmemb, void *user_pointer);
-void api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Position* passant, Piece* terminated_pieces);
-void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, Position* passant, char * api_color);
+API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Piece* terminated_pieces);
+void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, char * api_color, API_response response);
+void check_game_over(char* play_color, API_response respsonse);
 #endif
