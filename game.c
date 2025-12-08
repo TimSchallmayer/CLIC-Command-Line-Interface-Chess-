@@ -57,30 +57,49 @@ void draw_chessboard(Piece* pieces, char* color) {
 }
 void create_pieces(Piece* pieces) {
 
-    // Initialize white pieces
-    //pieces[0] = (Piece){"Rook", "♖", 0, 7, true, false};
-    //pieces[1] = (Piece){"Knight", "♘", 1, 7, true, false};
-    //pieces[2] = (Piece){"Bishop", "♗", 2, 7, true, false};
-    //pieces[3] = (Piece){"Queen", "♕", 3, 7, true, false};
+    printf("Creating pieces...\n");
+    // black pieces
+    pieces[0] = (Piece){"Rook", "♖", 0, 7, true, false};
+    pieces[1] = (Piece){"Knight", "♘", 1, 7, true, false};
+    pieces[2] = (Piece){"Bishop", "♗", 2, 7, true, false};
+    pieces[3] = (Piece){"Queen", "♕", 3, 7, true, false};
     pieces[4] = (Piece){"King", "♔", 4, 7, true, false};
-    //pieces[5] = (Piece){"Bishop", "♗", 5, 7, true, false};
-    //pieces[6] = (Piece){"Knight", "♘", 6, 7, true, false};
-    //pieces[7] = (Piece){"Rook", "♖", 7, 7, true, false};
+    pieces[5] = (Piece){"Bishop", "♗", 5, 7, true, false};
+    pieces[6] = (Piece){"Knight", "♘", 6, 7, true, false};
+    pieces[7] = (Piece){"Rook", "♖", 7, 7, true, false};
     for (int i = 0; i < 8; i++) {
-        pieces[8 + i] = (Piece){"Pawn", "♙", i, 6, true, false};
+        pieces[8 + i].name = malloc(5 * sizeof(char));
+        pieces[8 + i].symbol = malloc(4 * sizeof(char));
+        strcpy(pieces[8 + i].name, "Pawn");
+        strcpy(pieces[8 + i].symbol, "♙"); 
+  
+        pieces[8 + i].x = -1;
+        pieces[8 + i].y = -1;
+        pieces[8 + i].is_white = true;
+        pieces[8 + i].has_moved = false;
     }
 
-    // Initialize black pieces
-    //pieces[16] = (Piece){"Rook", "♜", 0, 0, false, false};
-    //pieces[17] = (Piece){"Knight", "♞", 1, 0, false, false};
-    //pieces[18] = (Piece){"Bishop", "♝", 2, 0, false, false};
-    //pieces[19] = (Piece){"Queen", "♛", 3, 0, false, false};
+    // white pieces (dumme logik mit den iswhite)
+    pieces[16] = (Piece){"Rook", "♜", -1, -1, false, false};
+    pieces[17] = (Piece){"Knight", "♞", -1, -1, false, false};
+    pieces[18] = (Piece){"Bishop", "♝", -1, -1, false, false};
+    pieces[19] = (Piece){"Queen", "♛", -1, -1, false, false};
     pieces[20] = (Piece){"King", "♚", 4, 0, false, false};
-    //pieces[21] = (Piece){"Bishop", "♝", 5, 0, false, false};
-   // pieces[22] = (Piece){"Knight", "♞", 6, 0, false, false};
-  //  pieces[23] = (Piece){"Rook", "♜", 7, 0, false, false};
+    pieces[21] = (Piece){"Bishop", "♝", -1, -1, false, false};
+    pieces[22] = (Piece){"Knight", "♞", -1, -1, false, false};
+    pieces[23] = (Piece){"Rook", "♜", -1, -1, false, false};
     for (int i = 0; i < 8; i++) {
-        pieces[24 + i] = (Piece){"Pawn", "♟", i, 1, false, false};
+        
+        pieces[24 + i].name = malloc(5 * sizeof(char));
+        pieces[24 + i].symbol = malloc(4 * sizeof(char));
+        strcpy(pieces[24 + i].name, "Pawn");
+        strcpy(pieces[24 + i].symbol, "♟"); 
+        pieces[24 + i].x = -1;
+        pieces[24 + i].y = -1;
+        pieces[24 + i].is_white = false;
+        pieces[24 + i].has_moved = false;
+
+      
     }
 }
 char * introduction(int * difficulty) {
@@ -780,7 +799,7 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
 {   
   //  printf("Processing player move...\n");
 
-    int i = which_piece(pieces, origin_x, origin_y);
+    int index_piece = which_piece(pieces, origin_x, origin_y);
     Piece choosen_piece;
     bool found = false;
     for (int i = 0; i < 32; i++) {
@@ -811,8 +830,10 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
 
    // printf("  Moving %s to %s\n", pieces[i].name, position);
 
-    if (strcmp(pieces[i].name, "Pawn") == 0) {
-        if (position_y == (pieces[i].is_white ? 1 : 8) && api_color == NULL) {   
+    if (strcmp(pieces[index_piece].name, "Pawn") == 0) {
+
+        if (position_y == (pieces[index_piece].is_white ? 0 : 7)) {  
+            printf("Pawn promotion available!\n");
             bool invalid = true;
             while (invalid && !respsonse.response) {
                 printf("Pawn promoted to: ");
@@ -826,49 +847,47 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
                     continue;
                 }
                 if (strcmp(promotion_choice, "Knight") == 0)
-                    pieces[i].symbol = pieces[i].is_white ? "♘" : "♞";
+                    pieces[index_piece].symbol = pieces[index_piece].is_white ? "♘" : "♞";
                 else if (strcmp(promotion_choice, "Bishop") == 0)
-                    pieces[i].symbol = pieces[i].is_white ? "♗" : "♝";
+                    pieces[index_piece].symbol = pieces[index_piece].is_white ? "♗" : "♝";
                 else if (strcmp(promotion_choice, "Rook") == 0)
-                    pieces[i].symbol = pieces[i].is_white ? "♖" : "♜";
+                    pieces[index_piece].symbol = pieces[index_piece].is_white ? "♖" : "♜";
                 else if (strcmp(promotion_choice, "Queen") == 0)
-                    pieces[i].symbol = pieces[i].is_white ? "♕" : "♛";
-                strcpy(pieces[i].name, promotion_choice);                
+                    pieces[index_piece].symbol = pieces[index_piece].is_white ? "♕" : "♛";
+                strcpy(pieces[index_piece].name, promotion_choice);                
             }
             if (respsonse.is_promotion && respsonse.response) {      
                 char promotion = respsonse.promotion_choice;
                 if (promotion == 'n') {
-                     pieces[i].symbol = pieces[i].is_white ? "♘" : "♞";
-                     strcpy(pieces[i].name, "Knight");
+                    strcpy(pieces[index_piece].symbol, pieces[index_piece].is_white ? "♘" : "♞");
+                    strcpy(pieces[index_piece].name, "Knight");
                     }
                 else if (promotion == 'b')
                 {
-                    pieces[i].symbol = pieces[i].is_white ? "♗" : "♝";
-                    strcpy(pieces[i].name, "Bishop");
+                    strcpy(pieces[index_piece].symbol, pieces[index_piece].is_white ? "♗" : "♝");
+                    strcpy(pieces[index_piece].name, "Bishop");
                 }
                 else if (promotion == 'r') {
-                    pieces[i].symbol = pieces[i].is_white ? "♖" : "♜";
-                    strcpy(pieces[i].name, "Rook");
+                    strcpy(pieces[index_piece].symbol, pieces[index_piece].is_white ? "♖" : "♜");
+                    strcpy(pieces[index_piece].name, "Rook");
                 }
                 else if (promotion == 'q') {
-                    strcpy(pieces[i].name, "Queen");
-                    pieces[i].symbol = pieces[i].is_white ? "♕" : "♛";
+                    strcpy(pieces[index_piece].name, "Queen");
+                    strcpy(pieces[index_piece].symbol, pieces[index_piece].is_white ? "♕" : "♛");
                 }
 
-
-
             }
-            return;
+    
     }
 }
-    pieces[i].x = position_x;
-    pieces[i].y = position_y;
-    pieces[i].has_moved = true;
+    pieces[index_piece].x = position_x;
+    pieces[index_piece].y = position_y;
+    pieces[index_piece].has_moved = true;
 
  //   printf("Move completed.\n");
     draw_chessboard(pieces, play_color);
    // printf("Board after move:\n");
-    if (strcmp(pieces[i].name, "Pawn") == 0)
+    if (strcmp(pieces[index_piece].name, "Pawn") == 0)
     {
         (*halbzug_counter) = 0;
     }
@@ -881,31 +900,54 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
         passant->x = -1;
         passant->y = -1;
     }*/
-    if (respsonse.response != false) {
-        check_game_over(play_color, respsonse);
-    }
+    check_game_over(play_color, respsonse, pieces);
+    
 
     return;
 }
-void check_game_over(char* play_color, API_response respsonse)
+void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
 {
     char* turnColor = (strcmp(respsonse.turn, "b") == 0) ? "black" : "white";
-    if (respsonse.mate == 1 || respsonse.mate == -1)
+    printf("Turn color: %s\n", turnColor);
+    printf("Play color: %s\n", play_color);
+    if (((respsonse.mate == 1 || respsonse.mate == -1) && strcmp(turnColor, play_color) == 0))
     {
         bool playerLost = (strcmp(turnColor, play_color) == 0);
 
         printf("\n           ===== GAME OVER =====\n");
-        printf("%s\n\n", respsonse.text);
+        printf("           Winner: %s\n\n", playerLost ? "Computer" : "Player");
         exit(0);
     }
 
-    if (respsonse.mate == 0)
+    else if (is_mate(pieces, play_color) == 0 || is_mate(pieces, strcmp(play_color, "white") == 0 ? "black" : "white") == 0)
     {
         printf("\n           ===== GAME OVER =====\n");
-        printf("%s\n\n", respsonse.text);
+        if (in_check(pieces, play_color) || in_check(pieces, strcmp(play_color, "white") == 0 ? "black" : "white"))
+        {
+            printf("           Winner: %s\n\n", (in_check(pieces, play_color)) ? "Computer" : "Player");
+        }
+        else {
+            printf("           Draw by stalemate!\n\n");
+        }
         exit(0);
     }
     return;
+}
+int is_mate(Piece * pieces, char* user_color) {
+    int count_mate = 0;
+        for (int i = 0; i < 32; i++) {
+            if ((pieces[i].is_white && strcmp(user_color, "black") == 0) || (!pieces[i].is_white && strcmp(user_color, "white") == 0)) {
+                for (int x = 0; x < 8; x++) {
+                    for (int y = 0; y < 8; y++) {
+                        if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y) && is_move_safe(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
+                            count_mate++;
+                            break; 
+                        }
+                    }
+                }
+            }
+        }
+    return count_mate; 
 }
 API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Piece* terminated_pieces) {
 
