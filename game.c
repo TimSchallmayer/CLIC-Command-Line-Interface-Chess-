@@ -73,29 +73,29 @@ void create_pieces(Piece* pieces) {
         strcpy(pieces[8 + i].name, "Pawn");
         strcpy(pieces[8 + i].symbol, "♙"); 
   
-        pieces[8 + i].x = -1;
-        pieces[8 + i].y = -1;
+        pieces[8 + i].x = i;
+        pieces[8 + i].y = 6;
         pieces[8 + i].is_white = true;
         pieces[8 + i].has_moved = false;
     }
 
     // white pieces (dumme logik mit den iswhite)
-    pieces[16] = (Piece){"Rook", "♜", -1, -1, false, false};
-    pieces[17] = (Piece){"Knight", "♞", -1, -1, false, false};
-    pieces[18] = (Piece){"Bishop", "♝", -1, -1, false, false};
-    pieces[19] = (Piece){"Queen", "♛", -1, -1, false, false};
+    pieces[16] = (Piece){"Rook", "♜", 0, 0, false, false};
+    pieces[17] = (Piece){"Knight", "♞", 1, 0, false, false};
+    pieces[18] = (Piece){"Bishop", "♝", 2, 0, false, false};
+    pieces[19] = (Piece){"Queen", "♛", 3, 0, false, false};
     pieces[20] = (Piece){"King", "♚", 4, 0, false, false};
-    pieces[21] = (Piece){"Bishop", "♝", -1, -1, false, false};
-    pieces[22] = (Piece){"Knight", "♞", -1, -1, false, false};
-    pieces[23] = (Piece){"Rook", "♜", -1, -1, false, false};
+    pieces[21] = (Piece){"Bishop", "♝", 5, 0, false, false};
+    pieces[22] = (Piece){"Knight", "♞", 6, 0, false, false};
+    pieces[23] = (Piece){"Rook", "♜", 7, 0, false, false};
     for (int i = 0; i < 8; i++) {
         
         pieces[24 + i].name = malloc(5 * sizeof(char));
         pieces[24 + i].symbol = malloc(4 * sizeof(char));
         strcpy(pieces[24 + i].name, "Pawn");
         strcpy(pieces[24 + i].symbol, "♟"); 
-        pieces[24 + i].x = -1;
-        pieces[24 + i].y = -1;
+        pieces[24 + i].x = i;
+        pieces[24 + i].y = 1;
         pieces[24 + i].is_white = false;
         pieces[24 + i].has_moved = false;
 
@@ -772,7 +772,7 @@ char * curl(char* json) {
         {
             printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
         }
-        printf("Response from API: %s\n", buff.data);
+       // printf("Response from API: %s\n", buff.data);
         char * response_str = buff.data;
         curl_slist_free_all(header);
         curl_easy_cleanup(curl);
@@ -908,8 +908,8 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
 void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
 {
     char* turnColor = (strcmp(respsonse.turn, "b") == 0) ? "black" : "white";
-    printf("Turn color: %s\n", turnColor);
-    printf("Play color: %s\n", play_color);
+ //   printf("Turn color: %s\n", turnColor);
+   // printf("Play color: %s\n", play_color);
     if (((respsonse.mate == 1 || respsonse.mate == -1) && strcmp(turnColor, play_color) == 0))
     {
         bool playerLost = (strcmp(turnColor, play_color) == 0);
@@ -997,8 +997,6 @@ API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int
     api_response.turn = col->valuestring;
     char * opponent_color = (strcmp(play_color, "white") == 0) ? "black" : "white";
    // printf("API moves\n");
-    printf("Choice: %c \n", api_response.promotion_choice);
-    printf("MATE: %i", mate);
     make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, zug_counter, halbzug_counter, opponent_color, api_response);
     return api_response;
 }
