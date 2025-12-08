@@ -57,7 +57,7 @@ void draw_chessboard(Piece* pieces, char* color) {
 }
 void create_pieces(Piece* pieces) {
 
-    printf("Creating pieces...\n");
+  //  printf("Creating pieces...\n");
     // black pieces
     pieces[0] = (Piece){"Rook", "♖", 0, 7, true, false};
     pieces[1] = (Piece){"Knight", "♘", 1, 7, true, false};
@@ -607,7 +607,7 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
     char zug_str[10];
     sprintf(zug_str, "%d", zug_counter);
     strcat(fen, zug_str);
-    printf("FEN: %s\n", fen);
+    //printf("FEN: %s\n", fen);
     return fen;
 }
 
