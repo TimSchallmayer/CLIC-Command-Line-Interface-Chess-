@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
                 int index = -1;
                 index = which_piece(pieces, position_x, position_y);
                 if (index != -1) {
-                    printf("%s captures %s\n", choosen_piece.name, pieces[index].name);
+                    printf("           %s captures %s\n", choosen_piece.name, pieces[index].name);
                     terminate_piece(&pieces[index]);
                 }
             }
@@ -154,13 +154,6 @@ int main(int argc, char* argv[]) {
             bool valid_input = false;
             while (!valid_input)
             {
-                if (api_response.mate == 0 )
-                {
-                    printf("%s\n", api_response.text);
-                    printf("Game Over!\n");
-                    exit(0);
-
-                }
                 printf("Enter piece, origin amd position: ");
 
                 if (scanf("%6s %2s %2s", piece, origin, position) != 3) {
@@ -205,7 +198,7 @@ int main(int argc, char* argv[]) {
                     printf("No matching piece found at origin.\n");
                     continue;
                 }
-                printf("Chosen piece: %s \n", choosen_piece.name);
+               // printf("Chosen piece: %s \n", choosen_piece.name);
                 if (origin_x == position_x && origin_y == position_y) {
                     printf("Invalid position!\n");
                     continue;
@@ -264,7 +257,7 @@ int main(int argc, char* argv[]) {
                     int index = -1;
                     index = which_piece(pieces, position_x, position_y);
                     if (index != -1) {
-                        printf("%s captures %s\n", choosen_piece.name, pieces[index].name);
+                        printf("           %s captures %s\n", choosen_piece.name, pieces[index].name);
                         terminate_piece(&pieces[index]);
                     }
                 }
