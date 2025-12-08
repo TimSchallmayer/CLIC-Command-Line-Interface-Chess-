@@ -120,6 +120,8 @@ int main(int argc, char* argv[]) {
 
             API_response user_respsonse;
             user_respsonse.response = false;
+            user_respsonse.mate = 100;
+            user_respsonse.turn = strcmp(play_color, "white") == 0 ? "b" : "w";
             make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
        //     printf("making fen");
             char* data = make_fen(pieces, play_color, zug_counter, halbzug_counter);
@@ -269,6 +271,7 @@ int main(int argc, char* argv[]) {
                 API_response user_respsonse;
                 user_respsonse.response = false;
                 user_respsonse.mate = 100;
+                user_respsonse.turn = strcmp(play_color, "white") == 0 ? "b" : "w";
                 make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
              //   printf("Move made.\n");
                 valid_input = true;
@@ -278,6 +281,14 @@ int main(int argc, char* argv[]) {
         }
     
     
+    }
+    for (int i = 8; i < 16; i++) {
+        free(pieces[i].name);
+        free(pieces[i].symbol);
+    }
+    for (int i = 24; i < 32; i++) {
+        free(pieces[i].name);
+        free(pieces[i].symbol);
     }
     free(pieces);
     free(terminated_pieces);
