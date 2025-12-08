@@ -57,5 +57,6 @@ char * curl(char* json);
 int callback(void *content, size_t size, size_t nmemb, void *user_pointer);
 API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Piece* terminated_pieces);
 void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, char * api_color, API_response response);
-void check_game_over(char* play_color, API_response respsonse);
+void check_game_over(char* play_color, API_response respsonse, Piece* pieces);
+int is_mate(Piece * pieces, char* user_color);
 #endif
