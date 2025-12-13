@@ -39,7 +39,7 @@ typedef struct {
     char* turn;
 } API_response;
 
-// Prototypen der Funktionen
+// funktionen
 void draw_chessboard(Piece* pieces, char* color);
 void create_pieces(Piece* pieces);
 char * introduction(int* difficulty);
