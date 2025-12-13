@@ -772,7 +772,7 @@ char * curl(char* json) {
         {
             printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
         }
-       // printf("Response from API: %s\n", buff.data);
+       // printf("API: %s\n", buff.data);
         char * response_str = buff.data;
         curl_slist_free_all(header);
         curl_easy_cleanup(curl);
