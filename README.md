@@ -31,13 +31,11 @@ It is written in **C** and uses modern libraries like **cJSON** and **libcurl** 
 
 ### 1. Install VCPKG
 
-```powershell```
+```powershell
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 .\bootstrap-vcpkg.bat
 2. Install required libraries
-powershell
-Code kopieren
 vcpkg install cjson libcurl
 3. Clone the project
 powershell
@@ -54,10 +52,9 @@ cmake --build .
 5. Run the program
 powershell
 Code kopieren
-.\Debug\CLIC.exe
+.\Debug\CLIC.exe``` 
+
 Project Structure
-bash
-Code kopieren
 CLIC/
 ├── main.c          # Entry point, CLI interface
 ├── game.c          # Game logic
