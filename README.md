@@ -56,17 +56,8 @@ cmake --build .
 ```
 .\Debug\CLIC.exe
 ```
+--------------------------------------------------------------------------------------------------------------
 
-Project Structure
-CLIC/
-├── main.c          # Entry point, CLI interface
-├── game.c          # Game logic
-├── cJSON/          # JSON library
-│   ├── cJSON.c
-│   ├── cJSON.h
-│   └── cJSON_Utils.c
-├── CMakeLists.txt  # Project configuration
-└── README.md       # This file
 
 #### Video Demo:  https://youtu.be/vit6YXHN6dw
 
