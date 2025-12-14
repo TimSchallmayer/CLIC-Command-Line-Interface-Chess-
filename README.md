@@ -36,16 +36,22 @@ git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 .\bootstrap-vcpkg.bat
 ```
+### 2. Set the PATH and VCPKG_ROOT variable
+
+```
+setx VCPKG_ROOT "<path-to-your-vcpkg>" /M
+setx PATH "%VCPKG_ROOT%;%PATH%" /M
+```
 ### 3. Clone the project
 ```
 git clone https://github.com/TimSchallmayer/CLIC-Command-Line-Interface-Chess-.git
 cd CLIC-Command-Line-Interface-Chess-
 ```
-### 2. Install required libraries from manifest
+### 4. Install required libraries from manifest
 ```
 vcpkg install
 ```
-### 4. Create build directory and compile
+### 5. Create build directory and compile
 ```
 mkdir build
 cd build
