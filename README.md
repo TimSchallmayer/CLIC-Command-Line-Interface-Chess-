@@ -36,23 +36,23 @@ git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 .\bootstrap-vcpkg.bat
 ```
-2. Install required libraries
+### 2. Install required libraries
 ```
 vcpkg install cjson libcurl
 ```
-3. Clone the project
+### 3. Clone the project
 ```
 git clone https://github.com/TimSchallmayer/CLIC-Command-Line-Interface-Chess-.git
 cd CLIC-Command-Line-Interface-Chess-
 ```
-4. Create build directory and compile
+### 4. Create build directory and compile
 ```
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=[VCPKG_ROOT]\scripts\buildsystems\vcpkg.cmake
 cmake --build .
 ```
-5. Run the program
+### 5. Run the program
 ```
 .\Debug\CLIC.exe
 ```
