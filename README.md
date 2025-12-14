@@ -31,28 +31,27 @@ It is written in **C** and uses modern libraries like **cJSON** and **libcurl** 
 
 ### 1. Install VCPKG
 
-```powershell
+```
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
-.\bootstrap-vcpkg.bat
+.\bootstrap-vcpkg.bat```
 2. Install required libraries
-vcpkg install cjson libcurl
+```
+vcpkg install cjson libcurl```
 3. Clone the project
-powershell
-Code kopieren
+```
 git clone https://github.com/TimSchallmayer/CLIC-Command-Line-Interface-Chess-.git
-cd CLIC-Command-Line-Interface-Chess-
+cd CLIC-Command-Line-Interface-Chess-```
 4. Create build directory and compile
-powershell
-Code kopieren
+```
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=[VCPKG_ROOT]\scripts\buildsystems\vcpkg.cmake
-cmake --build .
+cmake --build .```
 5. Run the program
-powershell
-Code kopieren
-.\Debug\CLIC.exe``` 
+```
+.\Debug\CLIC.exe
+```
 
 Project Structure
 CLIC/
