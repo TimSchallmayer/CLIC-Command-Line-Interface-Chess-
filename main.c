@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include "chess.h"
 #include <cjson/cJSON.h>
-#include <cjson/cJSON_Utils.h>
 #include <curl/curl.h>
 
 int main(int argc, char* argv[]) {
