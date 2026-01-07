@@ -2,7 +2,7 @@
 
 # CLIC – Command Line Interface Chess
 
-![C-Logo](https://img.shields.io/badge/language-C-blue) ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![C-Logo](https://img.shields.io/badge/language-C-blue) 
 
 **CLIC** is a minimalist chess program that can be played directly from the command line.  
 It is written in **C** and uses modern libraries like **cJSON** and **libcurl** for efficient game and data management.
@@ -21,13 +21,13 @@ It is written in **C** and uses modern libraries like **cJSON** and **libcurl** 
 
 ## Requirements
 
-- **CMake** >= 3.20  
+- **CMake** >= 3.20 (optional)
 - **VCPKG** (for libraries like `cJSON` and `libcurl`)  
 - Compiler: MSVC, GCC, or Clang  
 
 ---
 
-## Installation
+## Installation, in case you aren't using the static version
 
 ### 1. Install VCPKG (make sure set the PATH and VCPKG_ROOT Variable)
 
