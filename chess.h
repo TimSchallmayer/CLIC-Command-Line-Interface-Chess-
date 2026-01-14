@@ -104,10 +104,10 @@ int callback(void *content, size_t size, size_t nmemb, void *user_pointer);
 // Speichert die Antwort der API.
 // --> Wird nicht manuell aufgerufen sondern wird von der Bibiliothek libcurl verwendet.
 
-API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Piece* terminated_pieces);
+API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter);
 // Führt den Zug der Api aus.
 
-void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, char * api_color, API_response response);
+void make_move(Piece* pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, char * api_color, API_response response);
 // führt einen Zug aus. 
 // --> Wird in api_move aufgerufen und sorgt somit nicht für den Zug des Nutzers sodnern auch den der API aus.
 

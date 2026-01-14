@@ -7,11 +7,9 @@
 #include <cjson/cJSON.h>
 #include <curl/curl.h>
 
-int main(int argc, char* argv[]) {
+int main() {
     system("powershell -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\"");
     Piece* pieces = malloc(32 * sizeof(Piece));
-    Piece* terminated_pieces = malloc(32 * sizeof(Piece));
-
     if (pieces == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
@@ -24,7 +22,6 @@ int main(int argc, char* argv[]) {
     create_pieces(pieces);
     draw_chessboard(pieces, play_color);
     bool game_over = false;
-    int c;
     while (!game_over) {
         
         if (strcmp(play_color, "white") == 0)
@@ -60,7 +57,7 @@ int main(int argc, char* argv[]) {
                 printf("Origin: %2s \n", origin);
                 continue;
             }
-
+        //    printf("valid INput\n");
             int position_x = tolower(position[0]) - 'a';
             int position_y = position[1] - '1';
             int origin_x = tolower(origin[0]) - 'a'; 
@@ -76,7 +73,6 @@ int main(int argc, char* argv[]) {
                     break;
                 }
             }
-
             if (!found) {
                 printf("No matching piece found at origin.\n");
                 continue;
@@ -85,23 +81,19 @@ int main(int argc, char* argv[]) {
                 printf("Invalid position!\n");
                 continue;
             }
-
             if (!valid_move(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
                 printf("Invalid move!\n");
                 continue;
             }
 
-
             if (in_check(pieces, play_color) && !is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
                 printf("You are in check! Move your king out of check.\n");
                 continue;
             }
-
             if (!is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
                 printf("This move would put your king in check!\n");
                 continue;
             }
-
             int i = which_piece(pieces, origin_x, origin_y);
             if (i == -1) {
                 printf("Unknown piece.\n");
@@ -116,24 +108,49 @@ int main(int argc, char* argv[]) {
                     terminate_piece(&pieces[index]);
                 }
             }
-
+           // printf("Making move...\n");
             API_response user_respsonse;
             user_respsonse.response = false;
             user_respsonse.mate = 100;
             user_respsonse.turn = strcmp(play_color, "white") == 0 ? "b" : "w";
-            make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
-       //     printf("making fen");
+            if (abs(origin_x - position_x == 2) && strcmp(choosen_piece.name, "King") == 0)
+            {
+                if (origin_x > position_x)
+                {
+                    int index_rook = which_piece(pieces, 0, origin_y);
+                    if (index_rook != -1) {
+                        pieces[index_rook].x = position_x +1;
+                    }
+                    printf("Rook moved during castleling1.\n");
+                }
+                else {
+                    int index_rook = which_piece(pieces, 7, origin_y);
+                    if (index_rook != -1) {
+                        pieces[index_rook].x = position_x -1;
+                    }
+                    printf("Rook moved during castleling.\n");
+                
+            }
+            
+            make_move(pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
+            pieces[i].has_moved = true;
+            //printf("making fen");
             char* data = make_fen(pieces, play_color, zug_counter, halbzug_counter);
-        //    printf("fen made");
+           // printf("fen made: %s", data);
             API_call api_call;
             api_call.fen = data;
             api_call.depth = difficulty;
             api_call.max_thinking_time = 5000;
             char* json_request = make_json(api_call);
             char * json_answer = curl(json_request);
-       //     printf("answer received");
-            api_move(cJSON_Parse(json_answer), pieces, play_color, &zug_counter, &halbzug_counter, terminated_pieces);
+           // printf("answer received: %s \n", json_answer);
+            cJSON* json_parsed = cJSON_Parse(json_answer);
+            api_move(json_parsed, pieces, play_color, &zug_counter, &halbzug_counter);
             zug_counter++;
+            free(data);
+            free(json_request);
+            free(json_answer);
+            cJSON_Delete(json_parsed);
         }
         else {
           //  printf("Waiting for opponent's move...\n");
@@ -144,7 +161,14 @@ int main(int argc, char* argv[]) {
             api_call.max_thinking_time = 5000;
             char* json_request = make_json(api_call);
             char * json_answer = curl(json_request);
-            API_response api_response = api_move(cJSON_Parse(json_answer), pieces, play_color, &zug_counter, &halbzug_counter, terminated_pieces);
+            cJSON* json_parsed = cJSON_Parse(json_answer);
+            API_response api_response = api_move(json_parsed, pieces, play_color, &zug_counter, &halbzug_counter);
+            free(data);
+            free(json_request);
+            free(json_answer);
+            cJSON_Delete(json_parsed);
+
+
          //   printf("Opponent moved.\n");
             char piece[7];     
             char position[3];   
@@ -184,8 +208,8 @@ int main(int argc, char* argv[]) {
                 Piece choosen_piece;
                 bool found = false;
                 for (int i = 0; i < 32; i++) {
-                    if (pieces[i].x == origin_x && pieces[i].y == origin_y && ((pieces[i].is_white == false && (strcmp(play_color, "white") == 0)) ||
-                    (pieces[i].is_white == true && (strcmp(play_color, "black") == 0)))) 
+                    if (pieces[i].x == origin_x && pieces[i].y == origin_y && ((pieces[i].is_white == false && (strcmp(play_color, "white") == 0 ||
+                (pieces[i].is_white == true && (strcmp(play_color, "black") == 0 )))))) 
                     {
                         choosen_piece = pieces[i];
                         found = true;
@@ -264,8 +288,27 @@ int main(int argc, char* argv[]) {
                 user_respsonse.response = false;
                 user_respsonse.mate = 100;
                 user_respsonse.turn = strcmp(play_color, "white") == 0 ? "b" : "w";
-                make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
+                if (abs(origin_x - position_x == 2) && strcmp(choosen_piece.name, "King") == 0)
+                {
+                    if (origin_x > position_x)
+                    {
+                        int index_rook = which_piece(pieces, 0, origin_y);
+                        if (index_rook != -1) {
+                            pieces[index_rook].x = position_x +1;
+                        }
+                        printf("Rook moved during castleling1.\n");
+                    }
+                    else {
+                        int index_rook = which_piece(pieces, 7, origin_y);
+                        if (index_rook != -1) {
+                            pieces[index_rook].x = position_x -1;
+                        }
+                        printf("Rook moved during castleling.\n");
+                    
+                }
+                make_move(pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
              //   printf("Move made.\n");
+                pieces[i].has_moved = true;
                 valid_input = true;
             }
             zug_counter++;
@@ -283,6 +326,5 @@ int main(int argc, char* argv[]) {
         free(pieces[i].symbol);
     }
     free(pieces);
-    free(terminated_pieces);
     return 0;
 }

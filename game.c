@@ -446,16 +446,13 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
     {
         if (abs(origin_x - position_x) == 2 )
         {
-            //printf("Castleling move detected.\n");
             if (is_castleling_possible(piece, pieces[which_piece(pieces, origin_x - 4, piece.y)], pieces, color) && origin_x > position_x)
             {
-                pieces[which_piece(pieces, origin_x - 4, piece.y)].x = origin_x -1;
                 return true;
             }
         
             if (is_castleling_possible(piece, pieces[which_piece(pieces, origin_x + 3, piece.y)], pieces, color) && position_x > origin_x)
             {
-                pieces[which_piece(pieces, origin_x + 3, piece.y)].x = origin_x +1;
                 return true;
             }
             
@@ -794,9 +791,9 @@ int callback(void *content, size_t size, size_t nmemb, void *user_pointer) {
 
     return huuge;
 }
-void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, char * api_color, API_response respsonse) 
+void make_move(Piece* pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, char * api_color, API_response respsonse) 
 {   
-  //  printf("Processing player move...\n");
+   // printf("Processing player move...\n");
 
     int index_piece = which_piece(pieces, origin_x, origin_y);
     Piece choosen_piece;
@@ -810,6 +807,7 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
             break;
         }
     }
+  
     if (api_color != NULL)
     {
         if (is_piece(position_x, position_y, pieces, "both")) 
@@ -822,12 +820,7 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
             }
         }
     }
-    char* position = malloc(3);
-    position[0] = position_x + 'a';
-    position[1] = position_y + '1';
-    position[2] = '\0';
 
-   // printf("  Moving %s to %s\n", pieces[i].name, position);
 
     if (strcmp(pieces[index_piece].name, "Pawn") == 0) {
 
@@ -877,15 +870,14 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
 
             }
     
+        }
     }
-}
     pieces[index_piece].x = position_x;
     pieces[index_piece].y = position_y;
     pieces[index_piece].has_moved = true;
 
- //   printf("Move completed.\n");
     draw_chessboard(pieces, play_color);
-   // printf("Board after move:\n");
+
     if (strcmp(pieces[index_piece].name, "Pawn") == 0)
     {
         (*halbzug_counter) = 0;
@@ -900,7 +892,6 @@ void make_move(Piece* pieces, Piece* terminated_pieces, char* play_color, int or
         passant->y = -1;
     }*/
     check_game_over(play_color, respsonse, pieces);
-    
 
     return;
 }
@@ -909,6 +900,7 @@ void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
     char* turnColor = (strcmp(respsonse.turn, "b") == 0) ? "black" : "white";
  //   printf("Turn color: %s\n", turnColor);
    // printf("Play color: %s\n", play_color);
+   
     if (((respsonse.mate == 1 || respsonse.mate == -1) && strcmp(turnColor, play_color) == 0))
     {
         bool playerLost = (strcmp(turnColor, play_color) == 0);
@@ -917,8 +909,7 @@ void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
         printf("           Winner: %s\n\n", playerLost ? "Computer" : "Player");
         exit(0);
     }
-
-    else if (is_mate(pieces, play_color) == 0 || is_mate(pieces, strcmp(play_color, "white") == 0 ? "black" : "white") == 0)
+    if (is_mate(pieces, play_color) == 0 || is_mate(pieces, strcmp(play_color, "white") == 0 ? "black" : "white") == 0)
     {
         printf("\n           ===== GAME OVER =====\n");
         if (in_check(pieces, play_color) || in_check(pieces, strcmp(play_color, "white") == 0 ? "black" : "white"))
@@ -933,22 +924,41 @@ void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
     return;
 }
 int is_mate(Piece * pieces, char* user_color) {
-    int count_mate = 0;
-        for (int i = 0; i < 32; i++) {
-            if ((pieces[i].is_white && strcmp(user_color, "black") == 0) || (!pieces[i].is_white && strcmp(user_color, "white") == 0)) {
-                for (int x = 0; x < 8; x++) {
-                    for (int y = 0; y < 8; y++) {
-                        if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y) && is_move_safe(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
-                            count_mate++;
-                            break; 
-                        }
+    int count_safe_moves = 0;
+    
+
+    for (int i = 0; i < 32; i++) {
+        Piece p = pieces[i];
+        
+        if (p.x == -1 || p.y == -1) {
+            continue;
+        }
+        
+        if ((p.is_white && strcmp(user_color, "black") == 0) || 
+            (!p.is_white && strcmp(user_color, "white") == 0)) {
+                
+            for (int x = 0; x < 8; x++) {
+                for (int y = 0; y < 8; y++) {
+                    if (x == p.x && y == p.y) continue;
+
+                    if (strcmp(p.name, "King") == 0 && abs(x - p.x) == 2) {
+                        continue;
+                    }
+
+                    if (valid_move(p, pieces, p.x, p.y, x, y) && 
+                        is_move_safe(p, pieces, p.x, p.y, x, y)) {
+                        count_safe_moves++;
+                        goto next_piece;
                     }
                 }
             }
         }
-    return count_mate; 
+        next_piece:;
+    }
+    
+    return count_safe_moves;
 }
-API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter, Piece* terminated_pieces) {
+API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter) {
 
     //printf("Processing API move...\n");
     cJSON* piece = cJSON_GetObjectItemCaseSensitive(response_json, "piece");
@@ -996,6 +1006,6 @@ API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int
     api_response.turn = col->valuestring;
     char * opponent_color = (strcmp(play_color, "white") == 0) ? "black" : "white";
    // printf("API moves\n");
-    make_move(pieces, terminated_pieces, play_color, origin_x, origin_y, position_x, position_y, zug_counter, halbzug_counter, opponent_color, api_response);
+    make_move(pieces, play_color, origin_x, origin_y, position_x, position_y, zug_counter, halbzug_counter, opponent_color, api_response);
     return api_response;
 }
