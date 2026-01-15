@@ -114,9 +114,10 @@ void make_move(Piece* pieces, char* play_color, int origin_x, int origin_y, int 
 void check_game_over(char* play_color, API_response respsonse, Piece* pieces);
 // Prüft ob das Spiel zu ende ist.
 
-int is_mate(Piece * pieces, char* user_color);
+bool is_mate(Piece * pieces, char* user_color);
 // Prüft ob eine Spielpartei Schachmatt, Patt oder garnichts ist.
-// Der Rückgabewert 0 bedeutet das eine Spielpartei keine legalen Züge mehr hat 
+// Der Rückgabewert true bedeutet das eine Spielpartei keine legalen Züge mehr hat 
 // und so kann nach weiterer Überprüfung durch in_check() geprüft werden ob es ein Matt oder Patt ist.
-
+bool can_reach(Piece *p, int x, int y);
+// Prüft ob eine Figur die angegebene Koordinate erreichen kann (unabhängig von anderen Figuren).
 #endif
