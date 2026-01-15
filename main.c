@@ -30,7 +30,7 @@ int main() {
             char position[3];   
             char origin[3];
 
-            printf("Enter piece, origin amd position: ");
+            printf("Enter piece, origin and position: ");
 
             if (scanf("%6s %2s %2s", piece, origin, position) != 3) {
                 printf("Invalid input!\n");
@@ -73,32 +73,33 @@ int main() {
                     break;
                 }
             }
+     
             if (!found) {
                 printf("No matching piece found at origin.\n");
                 continue;
             }
+        
             if (origin_x == position_x && origin_y == position_y) {
                 printf("Invalid position!\n");
                 continue;
             }
+
             if (!valid_move(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
                 printf("Invalid move!\n");
                 continue;
             }
 
-            if (in_check(pieces, play_color) && !is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
-                printf("You are in check! Move your king out of check.\n");
-                continue;
-            }
             if (!is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
-                printf("This move would put your king in check!\n");
+                printf("Either your are in check or this move would put in it!\n");
                 continue;
             }
+           
             int i = which_piece(pieces, origin_x, origin_y);
             if (i == -1) {
                 printf("Unknown piece.\n");
                 continue;
             }
+           
             if (is_piece(position_x, position_y, pieces, "both")) 
             {
                 int index = -1;
@@ -113,8 +114,9 @@ int main() {
             user_respsonse.response = false;
             user_respsonse.mate = 100;
             user_respsonse.turn = strcmp(play_color, "white") == 0 ? "b" : "w";
-            if (abs(origin_x - position_x == 2) && strcmp(choosen_piece.name, "King") == 0)
+            if (abs(origin_x - position_x) == 2 && strcmp(choosen_piece.name, "King") == 0)
             {
+                printf("Castleling detected.\n");
                 if (origin_x > position_x)
                 {
                     int index_rook = which_piece(pieces, 0, origin_y);
@@ -131,7 +133,7 @@ int main() {
                     printf("Rook moved during castleling.\n");
                 
             }
-            
+        }
             make_move(pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
             pieces[i].has_moved = true;
             //printf("making fen");
@@ -177,7 +179,7 @@ int main() {
             bool valid_input = false;
             while (!valid_input)
             {
-                printf("Enter piece, origin amd position: ");
+                printf("Enter piece, origin and position: ");
 
                 if (scanf("%6s %2s %2s", piece, origin, position) != 3) {
                     printf("Invalid input!\n");
@@ -217,31 +219,33 @@ int main() {
                     }
                 }
 
+            
                 if (!found) {
                     printf("No matching piece found at origin.\n");
                     continue;
                 }
-               // printf("Chosen piece: %s \n", choosen_piece.name);
+          
                 if (origin_x == position_x && origin_y == position_y) {
                     printf("Invalid position!\n");
                     continue;
                 }
-
+             
                 if (!valid_move(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
                     printf("Invalid move!\n");
                     continue;
                 }
-
+        
                 if (!is_move_safe(choosen_piece, pieces, origin_x, origin_y, position_x, position_y)) {
-                    printf("This move would put your king in check!\n");
+                    printf("Either your are in check or this move would put in it!\n");
                     continue;
                 }
-
+               
                 int i = which_piece(pieces, origin_x, origin_y);
                 if (i == -1) {
                     printf("Unknown piece.\n");
                     continue;
-                }/* Funktioniert nicht, da die benutze API en passant nicht richtig behandelt
+                }
+                /* Funktioniert nicht, da die benutze API en passant nicht richtig behandelt
                 if (abs(position_y - origin_y) == 2 && strcmp(choosen_piece.name, "Pawn") == 0) { 
                     printf("En Passant possible!\n");
 
@@ -305,6 +309,7 @@ int main() {
                         }
                         printf("Rook moved during castleling.\n");
                     
+                }
                 }
                 make_move(pieces, play_color, origin_x, origin_y, position_x, position_y, &zug_counter, &halbzug_counter, NULL, user_respsonse);
              //   printf("Move made.\n");
