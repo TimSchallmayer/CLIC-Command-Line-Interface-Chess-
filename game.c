@@ -55,7 +55,6 @@ void draw_chessboard(Piece* pieces, char* color) {
 
 }
 void create_pieces(Piece* pieces) {
-
   //  printf("Creating pieces...\n");
     // black pieces
     pieces[0] = (Piece){"Rook", "♖", 0, 7, true, false};
@@ -225,7 +224,7 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
             
             else { 
                 return false;
-            }    /* code */
+            }  
         }
         else if (strcmp(color, "black") == 0)
         {
@@ -468,7 +467,6 @@ bool valid_move(Piece piece, Piece* pieces, int origin_x, int origin_y, int posi
 }
 
 bool is_piece(int x, int y, Piece* pieces, char * color) {
-
     for (int i = 0; i < 32; i++) {
         if (pieces[i].x == x && pieces[i].y == y) {
             if (strcmp(color, "black") == 0 && pieces[i].is_white)
@@ -609,28 +607,44 @@ char * make_fen(Piece* pieces, char * color, int zug_counter, int halbzug_counte
 
 
 bool is_sqare_attacked(int x, int y, Piece* pieces, char* color) {
-    for (int i = 0; i < 32; i++) {
-        if ((pieces[i].is_white && strcmp(color, "black") == 0) || (!pieces[i].is_white && strcmp(color, "white") == 0)) {
-            if (strcmp(pieces[i].name, "Pawn") == 0)
+    for (int i = (strcmp(color, "black") == 0 ? 0 : 16); i < (strcmp(color, "black") == 0 ? 16 : 32); i++) {
+            if (pieces[i].x == -1 && pieces[i].y == -1)
+            {
+                continue;
+            }
+            else if (!can_reach(&pieces[i], x, y))
+            {
+                continue;
+            }
+            else if (strcmp(pieces[i].name, "Pawn") == 0)
             {
                 if (abs(pieces[i].x - x) == 1 && (pieces[i].y - y == -1 && strcmp(color, "black") == 0) ||(pieces[i].y - y == 1 && strcmp(color, "black") == 0)) {
                     return true;
                 } else {
                     continue;
                 }
-               // printf("2");
             }
-            
-            if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
+            else if (strcmp(pieces[i].name, "King") == 0) {
+                if (abs(pieces[i].x - x) <= 1 && abs(pieces[i].y - y) <= 1 &&
+                    !(pieces[i].x == x && pieces[i].y == y)) {
+                    return true;
+                }
+                continue;
+            }
+            else if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
                 return true;
             }
         }
-    }
     return false;
 }
 
 bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) {
     if (king.is_white != rook.is_white) {
+        return false;
+    }
+    if (king.has_moved || rook.has_moved)
+    {
+        //printf("castleling false due to moved piece\n");
         return false;
     }
     if (strcmp(color, "white") == 0) {
@@ -648,17 +662,6 @@ bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) 
             return false;
         }
     }
-    if (is_sqare_attacked(king.x, king.y, pieces, strcmp(color, "white") == 0 ? "black" : "white")) 
-    {
-     //   printf("castleling false due to check\n");
-        return false;
-    }
-    if (king.has_moved || rook.has_moved)
-    {
-        //printf("castleling false due to moved piece\n");
-        return false;
-    }
-    
     int step = 0;
     if (rook.x > king.x) {
         step = 1;
@@ -676,6 +679,11 @@ bool is_castleling_possible(Piece king, Piece rook, Piece* pieces, char* color) 
          //   printf("castleling false due to attacked square inbetween\n");
             return false;
         }
+    }
+    if (is_sqare_attacked(king.x, king.y, pieces, strcmp(color, "white") == 0 ? "black" : "white")) 
+    {
+     //   printf("castleling false due to check\n");
+        return false;
     }
     return true;
 }
@@ -706,7 +714,6 @@ bool in_check(Piece* pieces, char* color) {
     return is_sqare_attacked(king.x, king.y, pieces, king.is_white ? "white" : "black");
 }
 bool is_move_safe(Piece piece, Piece* pieces, int origin_x, int origin_y, int position_x, int position_y) {
-
     int i = which_piece(pieces, origin_x, origin_y);
     int opp_i = which_piece(pieces, position_x, position_y);
     int original_opp_x;
@@ -733,12 +740,10 @@ bool is_move_safe(Piece piece, Piece* pieces, int origin_x, int origin_y, int po
         pieces[opp_i].x = original_opp_x;
         pieces[opp_i].y = original_opp_y;
     }
-
     return safe;
 }
 
 char * make_json(API_call call) {
-
     cJSON *json = cJSON_CreateObject();
     cJSON_AddStringToObject(json, "fen", call.fen);
     cJSON_AddNumberToObject(json, "depth", call.depth);
@@ -748,7 +753,6 @@ char * make_json(API_call call) {
     return json_str;
 }
 char * curl(char* json) {
-
     Buffer buff = {0};
     CURL *curl;
     curl = curl_easy_init();
@@ -793,6 +797,7 @@ int callback(void *content, size_t size, size_t nmemb, void *user_pointer) {
 }
 void make_move(Piece* pieces, char* play_color, int origin_x, int origin_y, int position_x, int position_y, int* zug_counter, int* halbzug_counter, char * api_color, API_response respsonse) 
 {   
+
    // printf("Processing player move...\n");
 
     int index_piece = which_piece(pieces, origin_x, origin_y);
@@ -807,7 +812,6 @@ void make_move(Piece* pieces, char* play_color, int origin_x, int origin_y, int 
             break;
         }
     }
-  
     if (api_color != NULL)
     {
         if (is_piece(position_x, position_y, pieces, "both")) 
@@ -820,7 +824,6 @@ void make_move(Piece* pieces, char* play_color, int origin_x, int origin_y, int 
             }
         }
     }
-
 
     if (strcmp(pieces[index_piece].name, "Pawn") == 0) {
 
@@ -898,9 +901,6 @@ void make_move(Piece* pieces, char* play_color, int origin_x, int origin_y, int 
 void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
 {
     char* turnColor = (strcmp(respsonse.turn, "b") == 0) ? "black" : "white";
- //   printf("Turn color: %s\n", turnColor);
-   // printf("Play color: %s\n", play_color);
-   
     if (((respsonse.mate == 1 || respsonse.mate == -1) && strcmp(turnColor, play_color) == 0))
     {
         bool playerLost = (strcmp(turnColor, play_color) == 0);
@@ -909,7 +909,7 @@ void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
         printf("           Winner: %s\n\n", playerLost ? "Computer" : "Player");
         exit(0);
     }
-    if (is_mate(pieces, play_color) == 0 || is_mate(pieces, strcmp(play_color, "white") == 0 ? "black" : "white") == 0)
+    if (is_mate(pieces, play_color) || is_mate(pieces, strcmp(play_color, "white") == 0 ? "black" : "white"))
     {
         printf("\n           ===== GAME OVER =====\n");
         if (in_check(pieces, play_color) || in_check(pieces, strcmp(play_color, "white") == 0 ? "black" : "white"))
@@ -923,40 +923,48 @@ void check_game_over(char* play_color, API_response respsonse, Piece* pieces)
     }
     return;
 }
-int is_mate(Piece * pieces, char* user_color) {
-    int count_safe_moves = 0;
-    
+bool is_mate(Piece * pieces, char* user_color) {
+    for (int i = (strcmp(user_color, "black") == 0 ? 16 : 0); i < (strcmp(user_color, "black") == 0 ? 32 : 16); i++) {
+        //hier der code um alle moeglichen zuege zu pruefen
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
 
-    for (int i = 0; i < 32; i++) {
-        Piece p = pieces[i];
-        
-        if (p.x == -1 || p.y == -1) {
-            continue;
-        }
-        
-        if ((p.is_white && strcmp(user_color, "black") == 0) || 
-            (!p.is_white && strcmp(user_color, "white") == 0)) {
+                if (pieces[i].x == x && pieces[i].y == y) continue;
+                if (!can_reach(&pieces[i], x, y)) continue;
                 
-            for (int x = 0; x < 8; x++) {
-                for (int y = 0; y < 8; y++) {
-                    if (x == p.x && y == p.y) continue;
-
-                    if (strcmp(p.name, "King") == 0 && abs(x - p.x) == 2) {
-                        continue;
-                    }
-
-                    if (valid_move(p, pieces, p.x, p.y, x, y) && 
-                        is_move_safe(p, pieces, p.x, p.y, x, y)) {
-                        count_safe_moves++;
-                        goto next_piece;
+                if (valid_move(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
+                    if (is_move_safe(pieces[i], pieces, pieces[i].x, pieces[i].y, x, y)) {
+                        return false;
                     }
                 }
             }
         }
-        next_piece:;
     }
-    
-    return count_safe_moves;
+    return true;
+}
+bool can_reach(Piece *p, int x, int y) {
+    int dx = abs(p->x - x);
+    int dy = abs(p->y - y);
+
+    if (strcmp(p->name, "King") == 0)
+        return dx <= 1 && dy <= 1;
+
+    if (strcmp(p->name, "Knight") == 0)
+        return (dx == 2 && dy == 1) || (dx == 1 && dy == 2);
+
+    if (strcmp(p->name, "Rook") == 0)
+        return dx == 0 || dy == 0;
+
+    if (strcmp(p->name, "Bishop") == 0)
+        return dx == dy;
+
+    if (strcmp(p->name, "Queen") == 0)
+        return dx == 0 || dy == 0 || dx == dy;
+
+    if (strcmp(p->name, "Pawn") == 0)
+        return (dx == 1 && dy == 0) || (dx == 1 && dy == 1) || (dx == 2 && dy == 0); 
+
+    return false;
 }
 API_response api_move(cJSON* response_json, Piece* pieces, char* play_color, int* zug_counter, int* halbzug_counter) {
 
